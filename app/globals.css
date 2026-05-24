@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =============================================================
+   BMI Design Tokens
+   Brand triad: Orange (work accent) · Red (brand) · Gold (premium)
+   Base: warm-white surface, punctuated by ink-black cinematic bands.
+   ============================================================= */
+
+@theme inline {
+  /* shadcn semantic tokens -> BMI palette */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* BMI brand scale */
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-strong: var(--brand-orange-strong);
+  --color-brand-red: var(--brand-red);
+  --color-brand-gold: var(--brand-gold);
+  --color-ink-900: var(--ink-900);
+  --color-ink-950: var(--ink-950);
+  --color-surface: var(--surface);
+  --color-steel: var(--steel);
+
+  /* typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+
+  /* motion */
+  --ease-bmi: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* radius */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* raw brand values */
+  --brand-orange: #e8842b;
+  --brand-orange-strong: #c96a12;
+  --brand-red: #c41e2a;
+  --brand-gold: #dda017;
+  --ink-900: #141414;
+  --ink-950: #0f1620;
+  --surface: #faf8f4;
+  --steel: #39414f;
+
+  /* semantic (light / warm-white base) */
+  --background: #faf8f4;
+  --foreground: #18120b;
+  --card: #fffdf9;
+  --card-foreground: #18120b;
+  --popover: #fffdf9;
+  --popover-foreground: #18120b;
+  --primary: #e8842b;
+  --primary-foreground: #ffffff;
+  --secondary: #f1ece2;
+  --secondary-foreground: #2a2118;
+  --muted: #efe8dc;
+  --muted-foreground: #6c6253;
+  --accent: #f3ece0;
+  --accent-foreground: #2a2118;
+  --destructive: #c41e2a;
+  --border: #e6ddcd;
+  --input: #e6ddcd;
+  --ring: #e8842b;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  /* Cinematic dark band helper */
+  .section-ink {
+    background-color: var(--ink-950);
+    color: #f4f1ea;
+  }
+
+  /* Warm golden-hour grade overlay for operational photos (PRD 3.7).
+     Apply to an absolutely-positioned sibling over a next/image fill. */
+  .grade-warm {
+    background:
+      linear-gradient(0deg, rgba(15, 22, 32, 0.18), rgba(15, 22, 32, 0.04) 55%),
+      linear-gradient(110deg, rgba(232, 132, 43, 0.16), rgba(221, 160, 23, 0.05) 60%, transparent);
+    mix-blend-mode: multiply;
+  }
+
+  /* Subtle film grain for ink sections */
+  .bg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /* Hairline divider in brand gold (used sparingly) */
+  .rule-gold {
+    background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+    height: 1px;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(100deg, var(--brand-orange), var(--brand-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
