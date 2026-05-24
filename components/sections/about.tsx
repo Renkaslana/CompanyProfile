@@ -15,21 +15,14 @@ export function About() {
             <div className="relative">
               <ImageFrame
                 media={{
-                  src: "/images/about/warehouse-wide.jpg",
+                  src: "/images/about/about.png",
                   alt: "Fasilitas pergudangan dan operasional BMI",
                 }}
                 className="aspect-4/3"
+                imgClassName="object-contain"
+                overlay={false}
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
-              {/* Floating credential card */}
-              <div className="absolute -bottom-6 -right-2 hidden rounded-2xl bg-ink-950 px-6 py-5 text-white shadow-xl sm:block">
-                <p className="font-display text-3xl font-bold text-brand-gold">
-                  {new Date().getFullYear() - COMPANY.foundedYear}+
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-white/60">
-                  Tahun Pengalaman
-                </p>
-              </div>
             </div>
           </Reveal>
 
