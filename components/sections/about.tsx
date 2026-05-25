@@ -18,8 +18,8 @@ export function About() {
                   src: "/images/about/about.png",
                   alt: "Fasilitas pergudangan dan operasional BMI",
                 }}
-                className="aspect-4/3"
-                imgClassName="object-contain"
+                className="aspect-3/2"
+                imgClassName="object-cover object-center"
                 overlay={false}
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
