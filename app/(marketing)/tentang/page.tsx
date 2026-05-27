@@ -35,7 +35,7 @@ export default async function TentangPage() {
             <Reveal>
               <ImageFrame
                 media={{
-                  src: "/images/about/team-ops.jpg",
+                  src: "/images/about/our-story.png",
                   alt: "Tim operasional BMI di lapangan",
                 }}
                 className="aspect-4/3"
@@ -49,8 +49,8 @@ export default async function TentangPage() {
                 description={`Berdiri sejak ${COMPANY.foundedYear}, ${COMPANY.legalName} tumbuh dari layanan transportasi sederhana menjadi mitra logistik terintegrasi. Fokus kami tak pernah berubah: menggerakkan barang dengan tepat waktu, aman, dan terpantau.`}
               />
               <p className="mt-5 leading-relaxed text-muted-foreground">
-                Kami melayani perusahaan lintas industri — ritel, manufaktur,
-                FMCG, hingga konstruksi — dengan kombinasi armada yang andal, tim
+                Kami melayani perusahaan lintas industri ritel, manufaktur,
+                FMCG, hingga konstruksi dengan kombinasi armada yang andal, tim
                 profesional, dan proses yang disiplin. Setiap pengiriman adalah
                 komitmen yang kami jaga.
               </p>

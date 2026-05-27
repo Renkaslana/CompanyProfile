@@ -5,7 +5,7 @@ export const galleryMock: GalleryItem[] = [
     id: "gal-briefing",
     title: "Briefing Pagi",
     category: "Briefing",
-    media: { src: "/images/gallery/briefing.jpg", alt: "Briefing pagi tim operasional BMI" },
+    media: { src: "/images/gallery/briefing.png", alt: "Briefing pagi tim operasional BMI" },
     order: 1,
   },
   {

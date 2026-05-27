@@ -19,7 +19,7 @@ export default async function GaleriPage() {
       <PageHeader
         eyebrow="Dokumentasi Operasional"
         title="Galeri kegiatan di lapangan"
-        description="Potret nyata operasional harian kami — bukti bahwa BMI aktif bergerak, bukan sekadar klaim."
+        description="Potret nyata operasional harian kami bukti bahwa BMI aktif bergerak, bukan sekadar klaim."
         breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]}
       />
 

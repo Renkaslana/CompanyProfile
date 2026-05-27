@@ -9,7 +9,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Unit serbaguna untuk distribusi dalam dan antar kota dengan muatan terlindungi penuh.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/box-truck.jpg", alt: "Box truck armada BMI" },
+    photo: { src: "/images/fleet/box_truck.png", alt: "Box truck armada BMI" },
     specs: [
       { label: "Kapasitas", value: "± 4 Ton" },
       { label: "Dimensi Bak", value: "4.3 × 2.0 × 2.2 m" },
@@ -25,7 +25,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Untuk volume besar dan rute jarak jauh antar pulau dengan keandalan tinggi.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/tronton.jpg", alt: "Truk tronton armada BMI" },
+    photo: { src: "/images/fleet/tronton.png", alt: "Truk tronton armada BMI" },
     specs: [
       { label: "Kapasitas", value: "± 15 Ton" },
       { label: "Konfigurasi", value: "6×2 / 6×4" },
@@ -41,7 +41,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Pengangkutan kontainer dan muatan oversize dengan penanganan profesional.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/trailer.jpg", alt: "Trailer kontainer armada BMI" },
+    photo: { src: "/images/fleet/trailer.png", alt: "Trailer kontainer armada BMI" },
     specs: [
       { label: "Kapasitas", value: "± 30 Ton" },
       { label: "Ukuran", value: "20 ft / 40 ft" },
@@ -57,7 +57,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Gesit untuk pengiriman last-mile dan akses area perkotaan yang padat.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/pickup.jpg", alt: "Pickup niaga armada BMI" },
+    photo: { src: "/images/fleet/pickup.png", alt: "Pickup niaga armada BMI" },
     specs: [
       { label: "Kapasitas", value: "± 1 Ton" },
       { label: "Tipe", value: "Pickup Bak" },
@@ -73,7 +73,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Muatan tertutup untuk barang bernilai dan sensitif cuaca.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/van.jpg", alt: "Delivery van armada BMI" },
+    photo: { src: "/images/fleet/van.png", alt: "Delivery van armada BMI" },
     specs: [
       { label: "Kapasitas", value: "± 1.5 Ton" },
       { label: "Ruang", value: "Tertutup" },
@@ -89,7 +89,7 @@ export const fleetMock: FleetVehicle[] = [
     description:
       "Mobilitas eksekutif dan operasional dengan kenyamanan dan kerapian premium.",
     status: "ACTIVE",
-    photo: { src: "/images/fleet/sedan.jpg", alt: "Sedan operasional rental BMI" },
+    photo: { src: "/images/fleet/sedan.png", alt: "Sedan operasional rental BMI" },
     specs: [
       { label: "Kapasitas", value: "4–7 Penumpang" },
       { label: "Opsi", value: "± / Tanpa Sopir" },

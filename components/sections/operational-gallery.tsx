@@ -15,7 +15,7 @@ export function OperationalGallery({ items }: { items: GalleryItem[] }) {
           <SectionHeading
             eyebrow="Dokumentasi Operasional"
             title="Bukti nyata, bukan sekadar klaim"
-            description="Potret kegiatan harian kami di lapangan — dari briefing pagi hingga pengiriman selesai."
+            description="Potret kegiatan harian kami di lapangan  dari briefing pagi hingga pengiriman selesai."
           />
           <Button
             render={<Link href="/galeri" />}

@@ -42,7 +42,7 @@ export function Hero({ stats }: { stats: Stat[] }) {
 
           <Reveal y={20} delay={0.16}>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
-              Armada yang andal, operasional 24/7, dan pemantauan real-time —
+              Armada yang andal, operasional 24/7, dan pemantauan real-time 
               dari gudang hingga tujuan akhir, di seluruh nusantara.
             </p>
           </Reveal>

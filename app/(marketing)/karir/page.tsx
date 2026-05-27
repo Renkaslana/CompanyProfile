@@ -40,7 +40,7 @@ export default async function KarirPage() {
             <Reveal>
               <ImageFrame
                 media={{
-                  src: "/images/gallery/briefing.jpg",
+                  src: "/images/gallery/briefing.png",
                   alt: "Tim BMI saat briefing pagi",
                 }}
                 className="aspect-4/3"
