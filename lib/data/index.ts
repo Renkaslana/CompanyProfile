@@ -1,21 +1,22 @@
 /**
- * Data access layer — the single swap point (PRD Lampiran C).
+ * Data access layer — the single swap point (ADR 0008).
  *
- * Components and pages call ONLY these accessors. In Phase 2 they return mock
- * data; in Phase 3 the bodies are replaced with Prisma/repository calls and the
- * signatures stay identical, so no component needs to change.
+ * Components and pages call ONLY these accessors. Phase 2 has flipped each
+ * body from returning mock arrays to delegating to a server-only service.
+ * Signatures are unchanged from the mock era; the frontend types in
+ * `features/*` describe the contract.
+ *
+ * Each accessor remains a single line so the seam stays obvious: anyone
+ * wanting to add caching, RBAC-scoped reads, or feature flags edits *here*,
+ * not the components.
+ *
+ * Server-only: importing this from a client component will fail the build.
  */
-import { servicesMock } from "@/mock/services.mock";
-import { fleetMock } from "@/mock/fleet.mock";
-import { galleryMock } from "@/mock/gallery.mock";
-import { newsMock } from "@/mock/news.mock";
-import { teamMock } from "@/mock/team.mock";
-import { clientsMock } from "@/mock/clients.mock";
-import { statsMock } from "@/mock/stats.mock";
-import { achievementsMock } from "@/mock/achievements.mock";
-import { coverageMock } from "@/mock/coverage.mock";
-import { certificationsMock } from "@/mock/certifications.mock";
-import { jobsMock } from "@/mock/jobs.mock";
+import "server-only";
+
+import { ContentService } from "@/server/services/content.service";
+import { FleetService } from "@/server/services/fleet.service";
+import { MarketingService } from "@/server/services/marketing.service";
 
 import type {
   Service,
@@ -31,69 +32,65 @@ import type {
 } from "@/features/content/types";
 import type { FleetVehicle } from "@/features/fleet/types";
 
-const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order;
-
 /* ---- Services ---- */
 export async function getServices(): Promise<Service[]> {
-  return [...servicesMock].filter((s) => s.published).sort(byOrder);
+  return ContentService.getPublishedServices();
 }
 
 export async function getServiceBySlug(slug: string): Promise<Service | null> {
-  return servicesMock.find((s) => s.slug === slug) ?? null;
+  return ContentService.getServiceBySlug(slug);
 }
 
 /* ---- Fleet ---- */
 export async function getFleet(): Promise<FleetVehicle[]> {
-  return [...fleetMock].sort(byOrder);
+  return FleetService.getFleet();
 }
 
 /* ---- Gallery ---- */
 export async function getGallery(): Promise<GalleryItem[]> {
-  return [...galleryMock].sort(byOrder);
+  return ContentService.getGallery();
 }
 
 /* ---- News ---- */
 export async function getNews(): Promise<NewsPost[]> {
-  return [...newsMock]
-    .filter((n) => n.status === "PUBLISHED")
-    .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt));
+  return ContentService.getNews();
 }
 
 export async function getLatestNews(limit = 3): Promise<NewsPost[]> {
-  return (await getNews()).slice(0, limit);
+  return ContentService.getLatestNews(limit);
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
-  return newsMock.find((n) => n.slug === slug) ?? null;
+  return ContentService.getNewsBySlug(slug);
 }
 
 /* ---- Team ---- */
 export async function getTeam(): Promise<TeamMember[]> {
-  return [...teamMock].sort(byOrder);
+  return ContentService.getTeam();
 }
 
 /* ---- Clients ---- */
 export async function getClients(): Promise<ClientLogo[]> {
-  return [...clientsMock].sort(byOrder);
+  return ContentService.getClients();
 }
 
 /* ---- Marketing presentational ---- */
 export async function getStats(): Promise<Stat[]> {
-  return statsMock;
+  return MarketingService.getStats();
 }
 
 export async function getAchievements(): Promise<Achievement[]> {
-  return achievementsMock;
+  return MarketingService.getAchievements();
 }
 
 export async function getCoverage(): Promise<CoverageRegion[]> {
-  return coverageMock;
+  return MarketingService.getCoverage();
 }
 
 export async function getCertifications(): Promise<Certification[]> {
-  return certificationsMock;
+  return MarketingService.getCertifications();
 }
 
 export async function getJobs(): Promise<JobOpening[]> {
-  return jobsMock;
+  return MarketingService.getJobs();
 }

@@ -12,7 +12,7 @@ export const COMPANY = {
   phone: "+62 21 5000 8888",
   whatsapp: "+62 812 1000 8888",
   email: "halo@bintangmuliainvestama.co.id",
-  operationalHours: "Operasional 24/7 · Kantor Senin–Sabtu 08.00–17.00 WIB",
+  operationalHours: "Operasional 24/7 · Kantor Senin–Sabtu 08.00–15.00 WIB",
   legal: {
     entity: "Perseroan Terbatas (PT)",
     nib: "1234-5678-9012-3456",
