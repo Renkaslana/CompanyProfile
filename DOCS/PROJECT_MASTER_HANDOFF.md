@@ -5,7 +5,7 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M2 (User Management completion + Audit Log UX).
+Last update: end of Phase 4 M5 (Services CMS — verified end-to-end manually).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -44,7 +44,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1 + M2 done. Remaining: M4–M11 (Media UI + 7 content modules + dashboard expansion + verification). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5 done. M3 skipped (approved). Remaining: M6–M11 (News + Gallery + Team/Clients + Stats/Settings + dashboard + verification). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |
@@ -347,10 +347,10 @@ AND respected by UI. Audit Log is readable. Build clean.
 | **3** | Auth.js v5 + RBAC + admin shell | ✅ Complete |
 | **4** | M1 Foundation primitives + Cloudinary + schema additive | ✅ Complete |
 | 4 | M2 User mgmt completion + Audit UX | ✅ Complete |
-| 4 | M3 Standalone Audit UX | ⚪ **Absorbed into M2** — pending owner decision (skip vs repurpose) |
-| 4 | M4 Media Library UI | ⏳ Pending — **next** |
-| 4 | M5 Services CMS | ⏳ Pending |
-| 4 | M6 News CMS (rich text, draft→publish→archive) | ⏳ Pending |
+| 4 | M3 Standalone Audit UX | ⏭️ **SKIPPED (approved)** — work was absorbed into M2; advanced audit UX (filter, search, CSV, pagination) deferred to Phase 8. |
+| 4 | M4 Media Library UI | ✅ Complete (Cloudinary signed upload, reference-guarded delete, audit lifecycle verified end-to-end) |
+| 4 | M5 Services CMS | ✅ Complete (list / create / edit / reorder / publish toggle, MediaPicker cover, useActionState field-level validation, audit + revalidate `/layanan`) |
+| 4 | M6 News CMS (rich text, draft→publish→archive) | ⏳ Pending — **next** |
 | 4 | M7 Gallery CMS | ⏳ Pending |
 | 4 | M8 Team + Clients CMS | ⏳ Pending |
 | 4 | M9 Stats + Settings CMS | ⏳ Pending |
@@ -395,6 +395,10 @@ Prisma; total varies depending on how you count `String[]` columns.)*
    MfaBackupCode.
 4. `20260602100000_phase4_m1_foundation` — User.disabledAt +
    NewsPost.archivedAt.
+
+**Phase 4 M4 and M5 added no schema changes** — both shipped against the
+existing `MediaAsset` and `Service` tables. No migrations were authored
+between Phase 4 M1 and the current point.
 
 `prisma migrate dev` requires interactive TTY which the Bash tool can't
 provide — so all migrations are authored as SQL files + applied via
@@ -615,8 +619,8 @@ When `/admin/audit` renders:
 
 | Module | Public reads | Admin CRUD | Status |
 |---|---|---|---|
-| **Media Library** | n/a (referenced by content) | ⏳ M4 not started | Foundation in place: `MediaService`, `MediaPicker` primitive, Cloudinary stub. |
-| **Services** | ✅ `lib/data.getServices()` | ⏳ M5 not started | Read path live. Admin pages do not exist. |
+| **Media Library** | n/a (referenced by content) | ✅ Phase 4 M4 | `/admin/media` — signed Cloudinary direct upload, edit (alt/title/tags), reference-guarded delete, audit lifecycle. JPG-MIME normalization fix applied. Cloudinary env: `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` (no `NEXT_PUBLIC_` prefix). |
+| **Services** | ✅ `lib/data.getServices()` | ✅ Phase 4 M5 | `/admin/services` — list / create / edit / reorder ↑↓ / publish toggle / delete. MediaPicker cover. Slug auto-derive + clash check. `useActionState` field-level validation with Indonesian Zod messages. Revalidates `/`, `/layanan`, `/layanan/[slug]`. |
 | **News** | ✅ `lib/data.getNews()` / `getLatestNews()` / `getNewsBySlug()` | ⏳ M6 not started | Read path live. Rich-text sanitization helper is in place. |
 | **Gallery** | ✅ `lib/data.getGallery()` | ⏳ M7 not started | Read path live. |
 | **Team** | ✅ `lib/data.getTeam()` | ⏳ M8 not started | Read path live. |
@@ -643,14 +647,22 @@ When `/admin/audit` renders:
 
 ### Cloudinary (media)
 
-- Status: **NOT configured** today (env keys are optional + empty).
-- Env vars (in `.env.example`): `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`,
-  `NEXT_PUBLIC_CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+- Status: **configured + verified end-to-end.** Owner credentials are in
+  `.env`; M4 upload (JPG + PNG), edit, and reference-guarded delete all
+  exercised through the UI + Cloudinary Admin API.
+- Env vars (in `.env.example`): `CLOUDINARY_CLOUD_NAME`,
+  `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`. (No `NEXT_PUBLIC_` prefix —
+  cloud_name + api_key are returned to the browser at runtime via the
+  `/api/v1/admin/media/sign` JSON response, not embedded at build time.)
 - `MediaService.getSignedUploadPayload()` throws
-  `MediaNotConfiguredError` until set.
-- **Must be configured before Phase 4 M4** (Media Library UI) actually runs
-  a Cloudinary upload. Reads of existing `local:`-prefixed MediaAsset rows
-  continue to work without Cloudinary.
+  `MediaNotConfiguredError` (with the specific missing key named) if any
+  of the three env vars are absent — added to M4 for self-diagnosis.
+- Cloudinary's `format` field returns the file *extension* (`jpg`, `svg`),
+  not the IANA MIME *subtype* (`jpeg`, `svg+xml`). `upload-form.tsx`
+  normalizes via `cloudinaryFormatToMime()`; the Zod regex also accepts
+  the un-normalized form as defense in depth. (M4 follow-up fix.)
+- Folder layout: `bmi/{gallery,fleet,news,about,brand}`. Cloudinary
+  auto-creates folders on first upload.
 
 ### Vercel (deploy)
 
@@ -783,13 +795,20 @@ documentation)
 - Phase 8.
 
 ### CSV export, filter UI, pagination on audit
-- Possibly M3 (if owner decides not to skip) or Phase 8.
+- Deferred to **Phase 8** (M3 was skipped — see §5).
 
 ### Drag-and-drop reordering on CMS lists
 - Phase 8 polish; Phase 4 uses explicit up/down or order-field editing.
 
 ### Concurrent-edit optimistic locking
 - Phase 8 if needed; Phase 4 ships without (small team usage).
+
+### Marketing-page dynamic rendering (`force-dynamic` on `/layanan`, `/berita`, etc.)
+- Phase 4 M11 verification roll-up (or fold into M6 alongside `/berita`).
+  M5's `revalidatePath` calls are correct, but `npm run build` artefacts
+  can mask new content until `rm -rf .next` + hard refresh. A ~3-line
+  `export const dynamic = "force-dynamic"` per marketing route closes the
+  gap permanently. Documented in §15 "Known runtime artefact".
 
 ---
 
@@ -838,6 +857,33 @@ documentation)
 - **Phase 4 M1/M2:** `tsc --noEmit`, `npm run lint`, `npm run build` all
   clean; routes still generate; manual UI smoke test through `/admin/users`
   by the owner (M2 approved based on manual testing).
+- **Phase 4 M4:** Real Cloudinary signed direct upload (JPG + PNG) through
+  the UI; MediaAsset row written with full metadata; reference guard
+  verified via harness (refuses delete of `media:brand/jasa-perdagangan.png`
+  while referenced by `svc-general-trading`); unreferenced delete clears
+  DB + Cloudinary (HTTP 404) + writes `MEDIA_DELETE` audit. Owner
+  approved manually.
+- **Phase 4 M5:** Full Service lifecycle exercised through real UI +
+  harness — create, publish toggle (both directions), reorder
+  (atomic `$transaction` swap), update, delete. Six lifecycle audit rows
+  observed with stable action constants. `useActionState` field-level
+  validation surfaces inline Indonesian Zod messages; happy path still
+  green. Owner approved manually.
+
+### Known runtime artefact — stale build cache can hide new content
+
+If you run `npm run build` then start the dev server, the prerendered
+`/layanan` (and similar marketing routes) may serve the build-time
+snapshot until you `rm -rf .next` or hard-refresh. This is **not** a
+wiring bug — `revalidatePath("/layanan")` fires correctly from every
+M5 Server Action. It's an operational hazard of switching between
+production-build and dev-mode artefacts in the same `.next` directory.
+
+Mitigations (all optional, none required to use the CMS):
+- Owner-side: `rm -rf .next && npm run dev`, then hard-refresh (Ctrl+F5).
+- Code-side (~3-line follow-up, candidate for M6 or Phase 8 polish):
+  `export const dynamic = "force-dynamic"` on each public marketing
+  page so revalidation propagates immediately.
 
 ### What still requires testing
 - **End-to-end RBAC matrix sweep** — programmatic test that every role can
@@ -855,62 +901,60 @@ documentation)
 
 ## 16. Remaining Roadmap
 
-In order. No skips except as called out.
+In order. Phase 4 M3 was **skipped** (decision made after M2; advanced audit UX
+deferred to Phase 8).
 
 | # | Phase / Milestone | Key deliverable |
 |---|---|---|
-| 1 | **Decide M3 disposition** | Either skip M3 (audit UX absorbed into M2) and start M4, OR repurpose M3 for audit filter/CSV/pagination. **Recommendation: skip.** |
-| 2 | **Phase 4 M4** Media Library UI | `/admin/media` — list grid, signed Cloudinary upload (requires env), tag/title edit, delete with reference guard. |
-| 3 | **Phase 4 M5** Services CMS | `/admin/services` — list/create/edit/reorder/toggle-publish. Cover image picker. Audit + revalidate `/layanan`. |
-| 4 | **Phase 4 M6** News CMS | `/admin/news` — full draft→publish→archive workflow + rich-text body (sanitized) + cover picker. Audit + revalidate `/berita`. |
-| 5 | **Phase 4 M7** Gallery CMS | `/admin/gallery` — list/create/edit/reorder/delete + category. |
-| 6 | **Phase 4 M8** Team + Clients CMS | `/admin/team` + `/admin/clients` — small CRUDs. |
-| 7 | **Phase 4 M9** Stats + Settings CMS | `/admin/stats` (Stat table) + `/admin/settings` (SiteSettings JSON forms with Zod schemas). |
-| 8 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
-| 9 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update. |
-| 10 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
-| 11 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |
-| 12 | **Phase 7** Lead management | Real lead persistence + Turnstile + rate limit + status workflow + LeadActivity timeline. |
-| 13 | **Phase 8** Security hardening | CSP, MFA UI, append-only audit, EXIF strip, CORS lock, gitleaks. |
-| 14 | **Phase 9** Testing & stabilization | Vitest + RTL + Playwright + axe + CI gate. |
-| 15 | **Phase 10** Production readiness | Sentry, Vercel deploy, CI/CD, backups, runbooks, root README. |
+| 1 | **Phase 4 M6** News CMS | `/admin/news` — full draft→publish→archive workflow + rich-text body (sanitized) + cover picker. Audit + revalidate `/berita`. |
+| 2 | **Phase 4 M7** Gallery CMS | `/admin/gallery` — list/create/edit/reorder/delete + category. |
+| 3 | **Phase 4 M8** Team + Clients CMS | `/admin/team` + `/admin/clients` — small CRUDs. |
+| 4 | **Phase 4 M9** Stats + Settings CMS | `/admin/stats` (Stat table) + `/admin/settings` (SiteSettings JSON forms with Zod schemas). |
+| 5 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
+| 6 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update + the public-page `force-dynamic` follow-up. |
+| 7 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
+| 8 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |
+| 9 | **Phase 7** Lead management | Real lead persistence + Turnstile + rate limit + status workflow + LeadActivity timeline. |
+| 10 | **Phase 8** Security hardening | CSP, **MFA UI**, append-only audit, EXIF strip, CORS lock, gitleaks, **advanced audit UX (filter/CSV/pagination)**. |
+| 11 | **Phase 9** Testing & stabilization | Vitest + RTL + Playwright + axe + CI gate. |
+| 12 | **Phase 10** Production readiness | Sentry, Vercel deploy, CI/CD, backups, runbooks, root README. |
 
 ---
 
 ## 17. Recommended Next Action
 
-**Begin Phase 4 M4 — Media Library UI.**
+**Begin Phase 4 M6 — News CMS.**
 
-### Why M4 next
-- M3 was originally "standalone Audit Log UX" — that work was naturally
-  folded into M2 (the same `UserRepository.findManyByIdSafe` JOIN serves
-  both pages). The approved invariants for Audit Log #1 (display actor
-  name/email) are live. M3 is therefore **redundant** unless the owner
-  wants to use the slot for follow-up UX (filter, search, CSV, pagination).
-  **Recommendation: skip M3 and treat M4 as the next milestone.**
-- M4 unblocks M5 → M9 (every content module uses the Media Picker).
+### Why M6 next
+- M4 (Media Library) and M5 (Services CMS) are complete and verified.
+- M6 reuses every M5 pattern (Server Actions returning `ServiceFormState`-
+  style via `useActionState`, MediaPicker cover, audit + revalidate of
+  public paths, RBAC at service layer).
+- M6 introduces the rich-text + draft→publish→archive workflow that M7
+  (Gallery) does NOT need, so it's the harder of the two — better to land
+  it next and pull forward the workflow primitives for M9/M11.
 
-### What M4 needs
-- **Cloudinary credentials** in `.env`:
-  `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`,
-  `NEXT_PUBLIC_CLOUDINARY_API_KEY`,
-  `CLOUDINARY_API_SECRET`.
-- A folder convention: `bmi/{gallery,fleet,news,about,brand}`.
+### What M6 needs
+- No new infrastructure. `NewsPost` model already has `status`
+  (`DRAFT|PUBLISHED|ARCHIVED`), `publishedAt`, `archivedAt`, `displayAuthor`.
+- `sanitize-html` is already wired (`components/admin/sanitized-html.tsx`).
+- M5's form-state pattern is the template for the form layout.
 
-### What M4 will deliver
-- `/admin/media` page using the M1 `AdminTable`, `StatusBadge`, and
-  `MediaPicker` primitives plus a new Cloudinary-direct upload widget.
-- A signed-upload Route Handler under `app/api/v1/admin/media/sign`.
-- A persist-upload Server Action that calls `MediaService.persistFromUpload`.
-- A delete action that calls `MediaService.deleteWithGuard` with a
-  `ConfirmDialog` listing the references (if any).
-- Title / alt / tag editing in-place.
+### What M6 will deliver
+- `/admin/news` list (drafts + published + archived), with filter chips.
+- `/admin/news/new` + `/admin/news/[id]/edit` forms with a sanitized
+  rich-text editor for `body`.
+- Status workflow buttons: Publish (DRAFT → PUBLISHED), Unpublish
+  (PUBLISHED → DRAFT), Archive (any → ARCHIVED).
+- Audit (`NEWS_CREATE` / `NEWS_UPDATE` / `NEWS_PUBLISH` / `NEWS_ARCHIVE` /
+  `NEWS_DELETE`) + revalidate `/berita`, `/berita/[slug]`, `/`.
 
-### What M4 does NOT include
-- Drag-and-drop reordering (Phase 8 polish).
-- Folder-renaming UI (manual via Cloudinary dashboard).
-- CSV export (Phase 8).
-- Image cropping inside the admin (use Cloudinary's transformations later).
+### What M6 does NOT include
+- Editorial scheduling (publish-at-future-time) — Phase 8 polish.
+- Multi-author byline — `displayAuthor` already covers the override case.
+- Comments / engagement metrics — never scoped.
+- The `force-dynamic` follow-up on `/berita` can either ride M6 (recommended)
+  or wait for M11.
 
 ---
 
@@ -972,9 +1016,12 @@ In order. No skips except as called out.
   `components/admin/sanitized-html.tsx`).
 
 ### What to start next
-**Phase 4 M4 — Media Library UI.** See §17 for the exact deliverable list.
-Confirm with the owner that M3 is being skipped, and confirm Cloudinary env
-keys are populated, before writing any M4 code.
+**Phase 4 M6 — News CMS.** See §17 for the exact deliverable list. M4 + M5
+patterns (Server Action `useActionState` form state, MediaPicker cover,
+audit + revalidate, defense-in-depth RBAC) are the template — clone, don't
+reinvent. Sanitize rich-text on both write (in the Server Action) and
+render (`SanitizedHtml`); allowlist already declared in
+`components/admin/sanitized-html.tsx`.
 
 ### Communication style
 - Reports should include: summary, files created, files modified, schema

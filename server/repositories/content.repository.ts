@@ -12,7 +12,13 @@
  * Server-only.
  */
 import "server-only";
-import type { Prisma, Service, GalleryItem, TeamMember, ClientLogo } from "@prisma/client";
+import type {
+  Prisma,
+  Service,
+  GalleryItem,
+  TeamMember,
+  ClientLogo,
+} from "@prisma/client";
 import { db } from "@/lib/db";
 
 /**
@@ -37,6 +43,49 @@ export const ContentRepository = {
   /** Lookup a `Service` by slug. Returns null when missing. */
   async findServiceBySlug(slug: string): Promise<Service | null> {
     return db.service.findUnique({ where: { slug } });
+  },
+
+  /* ── Services — admin read/write (Phase 4 M5) ──────────────────────────── */
+
+  /** All services, drafts included, ordered by `order` ASC (admin list). */
+  async findAllServices(): Promise<Service[]> {
+    return db.service.findMany({ orderBy: { order: "asc" } });
+  },
+
+  async findServiceById(id: string): Promise<Service | null> {
+    return db.service.findUnique({ where: { id } });
+  },
+
+  async findServiceByExactSlug(slug: string, excludeId?: string): Promise<Service | null> {
+    return db.service.findFirst({
+      where: { slug, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
+    });
+  },
+
+  async createService(data: Prisma.ServiceCreateInput): Promise<Service> {
+    return db.service.create({ data });
+  },
+
+  async updateService(id: string, data: Prisma.ServiceUpdateInput): Promise<Service> {
+    return db.service.update({ where: { id }, data });
+  },
+
+  async deleteService(id: string): Promise<Service> {
+    return db.service.delete({ where: { id } });
+  },
+
+  /** Swap two services' `order` values in a single transaction (for reorder). */
+  async swapServiceOrders(a: { id: string; order: number }, b: { id: string; order: number }) {
+    await db.$transaction([
+      db.service.update({ where: { id: a.id }, data: { order: b.order } }),
+      db.service.update({ where: { id: b.id }, data: { order: a.order } }),
+    ]);
+  },
+
+  /** Next free `order` value (used when creating a new service at the end). */
+  async getNextServiceOrder(): Promise<number> {
+    const last = await db.service.findFirst({ orderBy: { order: "desc" }, select: { order: true } });
+    return (last?.order ?? -1) + 1;
   },
 
   /* ── News ─────────────────────────────────────────────────────────────── */

@@ -29,6 +29,8 @@ const ADMIN_HEADERS: Record<string, string> = {
 const ROUTE_GUARDS: Array<{ prefix: string; perm: string }> = [
   { prefix: "/admin/users", perm: "users:manage" },
   { prefix: "/admin/audit", perm: "audit:read" },
+  { prefix: "/admin/media", perm: "media:create" },
+  { prefix: "/admin/services", perm: "content:read" },
   { prefix: "/admin/settings", perm: "settings:write" },
 ];
 

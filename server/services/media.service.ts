@@ -29,10 +29,11 @@ import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
 
 export class MediaNotConfiguredError extends Error {
-  constructor() {
+  constructor(missing: string[] = []) {
+    const detail = missing.length ? `Missing: ${missing.join(", ")}. ` : "";
     super(
-      "Cloudinary is not configured. Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, " +
-        "NEXT_PUBLIC_CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env.",
+      `${detail}Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, ` +
+        "CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env, then restart the dev server.",
     );
     this.name = "MediaNotConfiguredError";
   }
@@ -53,16 +54,14 @@ export class MediaInUseError extends Error {
 }
 
 function ensureCloudinaryConfigured() {
-  if (
-    !env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
-    !env.NEXT_PUBLIC_CLOUDINARY_API_KEY ||
-    !env.CLOUDINARY_API_SECRET
-  ) {
-    throw new MediaNotConfiguredError();
-  }
+  const missing: string[] = [];
+  if (!env.CLOUDINARY_CLOUD_NAME) missing.push("CLOUDINARY_CLOUD_NAME");
+  if (!env.CLOUDINARY_API_KEY) missing.push("CLOUDINARY_API_KEY");
+  if (!env.CLOUDINARY_API_SECRET) missing.push("CLOUDINARY_API_SECRET");
+  if (missing.length > 0) throw new MediaNotConfiguredError(missing);
   cloudinary.config({
-    cloud_name: env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    cloud_name: env.CLOUDINARY_CLOUD_NAME,
+    api_key: env.CLOUDINARY_API_KEY,
     api_secret: env.CLOUDINARY_API_SECRET,
     secure: true,
   });
@@ -85,8 +84,8 @@ async function buildSignedUploadPayload(folder: MediaFolder) {
     env.CLOUDINARY_API_SECRET!,
   );
   return {
-    cloudName: env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
-    apiKey: env.NEXT_PUBLIC_CLOUDINARY_API_KEY!,
+    cloudName: env.CLOUDINARY_CLOUD_NAME!,
+    apiKey: env.CLOUDINARY_API_KEY!,
     timestamp,
     folder: `bmi/${folder}`,
     signature,

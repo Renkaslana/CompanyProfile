@@ -71,9 +71,15 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal("")),
   UPSTASH_REDIS_REST_TOKEN: z.string().trim().optional().or(z.literal("")),
   /** Cloudinary — Phase 4. Optional so local dev can run without uploads; the
-   *  MediaService throws "not configured" if any operation needs them. */
-  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().trim().optional().or(z.literal("")),
-  NEXT_PUBLIC_CLOUDINARY_API_KEY: z.string().trim().optional().or(z.literal("")),
+   *  MediaService throws "not configured" if any operation needs them.
+   *
+   *  NOTE: NO `NEXT_PUBLIC_` prefix. `cloud_name` and `api_key` are not
+   *  secrets, but they are also not embedded at build time — the browser
+   *  receives them at runtime via the JSON response from
+   *  `/api/v1/admin/media/sign`. Keeping them server-side avoids bundling
+   *  them into the client JS. */
+  CLOUDINARY_CLOUD_NAME: z.string().trim().optional().or(z.literal("")),
+  CLOUDINARY_API_KEY: z.string().trim().optional().or(z.literal("")),
   CLOUDINARY_API_SECRET: z.string().trim().optional().or(z.literal("")),
 });
 
