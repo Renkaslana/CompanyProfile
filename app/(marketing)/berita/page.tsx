@@ -5,6 +5,10 @@ import { NewsCard } from "@/features/content/components/news-card";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { getNews } from "@/lib/data";
 
+// Phase 4 M6: render fresh on every request so newly-published berita
+// appear immediately in the list.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Berita & Update",
   description:

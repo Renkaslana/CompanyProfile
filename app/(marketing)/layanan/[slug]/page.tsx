@@ -10,6 +10,9 @@ import { CtaBand } from "@/components/sections/cta-band";
 import { Reveal } from "@/components/motion/reveal";
 import { getServiceBySlug, getServices } from "@/lib/data";
 
+// Phase 4 M5/M6: render fresh so newly-published services appear immediately.
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
   const services = await getServices();
   return services.map((s) => ({ slug: s.slug }));

@@ -13,14 +13,17 @@
  *  • the action + hidden form fields
  *  • a danger/normal styling variant for the confirm button
  */
-import { useState, useRef, useId, type ReactNode } from "react";
+import { useState, useRef, useId, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
-  trigger: ReactNode;
+  /** Trigger element. MUST be a single React element (e.g. a Button) — not
+   *  a Fragment or array — because Base UI's `render` prop clones the
+   *  element to inject the trigger's onClick. */
+  trigger: ReactElement;
   title: ReactNode;
   description?: ReactNode;
   confirmLabel?: string;
@@ -49,7 +52,7 @@ export function ConfirmDialog({
 
   return (
     <BaseDialog.Root open={open} onOpenChange={setOpen}>
-      <BaseDialog.Trigger render={<>{trigger}</>} />
+      <BaseDialog.Trigger render={trigger} />
       <BaseDialog.Portal>
         <BaseDialog.Backdrop className="fixed inset-0 z-50 bg-ink-950/40 backdrop-blur-sm" />
         <BaseDialog.Popup

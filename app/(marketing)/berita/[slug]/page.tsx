@@ -4,11 +4,16 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, UserRound } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { ImageFrame } from "@/components/image-frame";
+import { SanitizedHtml } from "@/components/admin/sanitized-html";
 import { NewsCard } from "@/features/content/components/news-card";
 import { CtaBand } from "@/components/sections/cta-band";
 import { Reveal } from "@/components/motion/reveal";
 import { formatDateID } from "@/lib/format";
 import { getNews, getNewsBySlug } from "@/lib/data";
+
+// Phase 4 M6: render fresh on every request so CMS publishes show up
+// immediately (no .next snapshot lag).
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   const posts = await getNews();
@@ -77,7 +82,7 @@ export default async function BeritaDetailPage({
 
           <div className="mt-8 space-y-5 text-lg leading-relaxed text-foreground/80">
             <p className="font-medium text-ink-900">{post.excerpt}</p>
-            <p>{post.body}</p>
+            <SanitizedHtml html={post.body} className="news-body" />
           </div>
 
           <div className="mt-10">

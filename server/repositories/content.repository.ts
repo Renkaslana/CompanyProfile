@@ -15,6 +15,7 @@ import "server-only";
 import type {
   Prisma,
   Service,
+  NewsPost,
   GalleryItem,
   TeamMember,
   ClientLogo,
@@ -40,9 +41,13 @@ export const ContentRepository = {
     });
   },
 
-  /** Lookup a `Service` by slug. Returns null when missing. */
+  /**
+   * Lookup a PUBLISHED `Service` by slug. Returns null for drafts or missing
+   * rows — public detail page should not expose unpublished content.
+   * (Tightened in M6 to close the analogous M5 hole.)
+   */
   async findServiceBySlug(slug: string): Promise<Service | null> {
-    return db.service.findUnique({ where: { slug } });
+    return db.service.findFirst({ where: { slug, published: true } });
   },
 
   /* ── Services — admin read/write (Phase 4 M5) ──────────────────────────── */
@@ -100,12 +105,53 @@ export const ContentRepository = {
     });
   },
 
-  /** Lookup a news article by slug (no published filter — mirrors mock). */
+  /**
+   * Lookup a PUBLISHED news article by slug. Drafts and archived posts
+   * return null so the public `/berita/[slug]` route never serves them
+   * even if the slug is guessed. (Tightened in M6.)
+   */
   async findNewsBySlug(slug: string): Promise<NewsPostWithAuthor | null> {
-    return db.newsPost.findUnique({
-      where: { slug },
+    return db.newsPost.findFirst({
+      where: { slug, status: "PUBLISHED" },
       include: { author: { select: { name: true } } },
     });
+  },
+
+  /* ── News — admin read/write (Phase 4 M6) ──────────────────────────── */
+
+  /** All news posts (any status), ordered by `publishedAt` DESC then by
+   *  `createdAt` DESC so drafts and archived appear sensibly. */
+  async findAllNews(opts?: { status?: NewsPost["status"] }): Promise<NewsPostWithAuthor[]> {
+    return db.newsPost.findMany({
+      where: opts?.status ? { status: opts.status } : undefined,
+      include: { author: { select: { name: true } } },
+      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+    });
+  },
+
+  async findNewsById(id: string): Promise<NewsPostWithAuthor | null> {
+    return db.newsPost.findUnique({
+      where: { id },
+      include: { author: { select: { name: true } } },
+    });
+  },
+
+  async findNewsByExactSlug(slug: string, excludeId?: string): Promise<NewsPost | null> {
+    return db.newsPost.findFirst({
+      where: { slug, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
+    });
+  },
+
+  async createNewsPost(data: Prisma.NewsPostCreateInput): Promise<NewsPost> {
+    return db.newsPost.create({ data });
+  },
+
+  async updateNewsPost(id: string, data: Prisma.NewsPostUpdateInput): Promise<NewsPost> {
+    return db.newsPost.update({ where: { id }, data });
+  },
+
+  async deleteNewsPost(id: string): Promise<NewsPost> {
+    return db.newsPost.delete({ where: { id } });
   },
 
   /* ── Gallery ──────────────────────────────────────────────────────────── */

@@ -8,6 +8,11 @@ import { CtaBand } from "@/components/sections/cta-band";
 import { Reveal } from "@/components/motion/reveal";
 import { getServices } from "@/lib/data";
 
+// Phase 4 M5/M6: render fresh on every request so newly-published services
+// appear immediately. Trade-off accepted (CMS-driven content wins over
+// static caching for this size of marketing site).
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Layanan",
   description:

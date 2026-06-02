@@ -5,6 +5,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   LogOut,
+  Newspaper,
   Package,
   ScrollText,
   Users,
@@ -18,6 +19,7 @@ type NavLink = { href: string; label: string; icon: React.ElementType; perm?: st
 const NAV: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, perm: "dashboard:read" },
   { href: "/admin/services", label: "Layanan", icon: Package, perm: "content:read" },
+  { href: "/admin/news", label: "Berita", icon: Newspaper, perm: "content:read" },
   { href: "/admin/media", label: "Media", icon: ImageIcon, perm: "media:create" },
   { href: "/admin/users", label: "Pengguna", icon: Users, perm: "users:manage" },
   { href: "/admin/audit", label: "Audit Log", icon: ScrollText, perm: "audit:read" },
