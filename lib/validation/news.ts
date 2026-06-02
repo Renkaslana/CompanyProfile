@@ -11,7 +11,7 @@
  * false-positive pass.
  */
 import { z } from "zod";
-import { cuid, mediaAssetId } from "./common";
+import { entityId, mediaAssetId } from "./common";
 
 /* ─── Field rules with Indonesian error messages ────────────────────── */
 
@@ -85,10 +85,10 @@ export const newsCreateSchema = z.object({
 });
 export type NewsCreateInput = z.infer<typeof newsCreateSchema>;
 
-export const newsUpdateSchema = z.object({ id: cuid, ...baseFields });
+export const newsUpdateSchema = z.object({ id: entityId, ...baseFields });
 export type NewsUpdateInput = z.infer<typeof newsUpdateSchema>;
 
-export const newsIdSchema = z.object({ id: cuid });
+export const newsIdSchema = z.object({ id: entityId });
 
 /* ─── Form state (for useActionState) ───────────────────────────────── */
 

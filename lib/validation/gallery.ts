@@ -5,7 +5,7 @@
  * no rich text. Required cover via MediaPicker.
  */
 import { z } from "zod";
-import { cuid, mediaAssetId } from "./common";
+import { entityId, mediaAssetId } from "./common";
 
 /* ─── Indonesian field rules ────────────────────────────────────────── */
 
@@ -49,10 +49,10 @@ const baseFields = {
 export const galleryCreateSchema = z.object({ ...baseFields });
 export type GalleryCreateInput = z.infer<typeof galleryCreateSchema>;
 
-export const galleryUpdateSchema = z.object({ id: cuid, ...baseFields });
+export const galleryUpdateSchema = z.object({ id: entityId, ...baseFields });
 export type GalleryUpdateInput = z.infer<typeof galleryUpdateSchema>;
 
-export const galleryIdSchema = z.object({ id: cuid });
+export const galleryIdSchema = z.object({ id: entityId });
 
 /* ─── Form state for useActionState ───────────────────────────────── */
 

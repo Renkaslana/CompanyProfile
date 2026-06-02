@@ -36,6 +36,30 @@ export const optionalText = z.string().trim().max(500).optional().or(z.literal("
 export const cuid = z.string().cuid();
 
 /**
+ * Primary-key identifier for any business-entity row (Service, NewsPost,
+ * GalleryItem, TeamMember, ClientLogo, FleetVehicle, etc).
+ *
+ * Accepts both:
+ *   • Prisma-generated cuids (new rows created via the CMS)
+ *   • Slug-style sentinels used by `prisma/seed.ts` for stable cross-references
+ *     (e.g. `svc-general-trading`, `news-1`, `gal-loading`, `team-1`)
+ *
+ * The final correctness check is the DB primary-key lookup (`findById`
+ * returns null → service throws `*NotFoundError`). This validator's job is
+ * just to reject empty/oversize/clearly-malformed inputs before they reach
+ * the repo.
+ *
+ * Allowed character set: lowercase letters, digits, underscore, hyphen, dot.
+ * Length 2–80. Rejects whitespace, slashes, quotes, and Unicode.
+ */
+export const entityId = z
+  .string()
+  .trim()
+  .min(2, "ID tidak valid (terlalu pendek).")
+  .max(80, "ID tidak valid (terlalu panjang).")
+  .regex(/^[a-z0-9_.\-]+$/i, "ID mengandung karakter tidak diizinkan.");
+
+/**
  * MediaAsset.id accepts BOTH formats currently in the database:
  *   • Cuid (Prisma-generated for Cloudinary uploads from M4 onwards)
  *   • `media:<path>` sentinel (seeded local assets; see prisma/seed.ts:64)

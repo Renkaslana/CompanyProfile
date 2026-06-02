@@ -9,7 +9,7 @@
  * services without covers will render placeholders on the marketing site.
  */
 import { z } from "zod";
-import { cuid, mediaAssetId } from "./common";
+import { entityId, mediaAssetId } from "./common";
 
 /* ─── Field rules with Indonesian error messages (M5 — overrides the
  *     generic English-default rules from `common.ts` so the form banner
@@ -93,10 +93,10 @@ const baseFields = {
 export const serviceCreateSchema = z.object({ ...baseFields });
 export type ServiceCreateInput = z.infer<typeof serviceCreateSchema>;
 
-export const serviceUpdateSchema = z.object({ id: cuid, ...baseFields });
+export const serviceUpdateSchema = z.object({ id: entityId, ...baseFields });
 export type ServiceUpdateInput = z.infer<typeof serviceUpdateSchema>;
 
-export const serviceIdSchema = z.object({ id: cuid });
+export const serviceIdSchema = z.object({ id: entityId });
 
 /** Splits the highlight textarea input (comma OR newline separated). */
 export function parseHighlights(raw: string | null | undefined): string[] {
