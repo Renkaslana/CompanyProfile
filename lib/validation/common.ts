@@ -34,3 +34,20 @@ export const iconKey = z.string().trim().min(1).max(60);
 export const optionalText = z.string().trim().max(500).optional().or(z.literal(""));
 
 export const cuid = z.string().cuid();
+
+/**
+ * MediaAsset.id accepts BOTH formats currently in the database:
+ *   • Cuid (Prisma-generated for Cloudinary uploads from M4 onwards)
+ *   • `media:<path>` sentinel (seeded local assets; see prisma/seed.ts:64)
+ *
+ * Use this anywhere a form picks a MediaAsset id (e.g. `coverId`, `mediaId`,
+ * `photoId`, `logoId`). Foreign-key check at DB-write catches truly invalid
+ * values — this validator just rejects obviously-malformed strings.
+ */
+export const mediaAssetId = z.union(
+  [
+    z.string().cuid(),
+    z.string().regex(/^media:[a-zA-Z0-9/_.-]+$/),
+  ],
+  { message: "ID media tidak valid." },
+);

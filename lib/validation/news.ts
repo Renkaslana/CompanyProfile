@@ -11,7 +11,7 @@
  * false-positive pass.
  */
 import { z } from "zod";
-import { cuid } from "./common";
+import { cuid, mediaAssetId } from "./common";
 
 /* ─── Field rules with Indonesian error messages ────────────────────── */
 
@@ -76,7 +76,7 @@ const baseFields = {
   body,
   category,
   displayAuthor,
-  coverId: cuid.nullable().optional().or(z.literal("")),
+  coverId: mediaAssetId.nullable().optional().or(z.literal("")),
 };
 
 export const newsCreateSchema = z.object({

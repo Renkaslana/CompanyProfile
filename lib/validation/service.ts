@@ -9,7 +9,7 @@
  * services without covers will render placeholders on the marketing site.
  */
 import { z } from "zod";
-import { cuid } from "./common";
+import { cuid, mediaAssetId } from "./common";
 
 /* ─── Field rules with Indonesian error messages (M5 — overrides the
  *     generic English-default rules from `common.ts` so the form banner
@@ -84,7 +84,7 @@ const baseFields = {
   summary,
   body: longBody,
   iconKey,
-  coverId: cuid.nullable().optional().or(z.literal("")),
+  coverId: mediaAssetId.nullable().optional().or(z.literal("")),
   highlights: highlightsList.optional().default([]),
   order: order.default(0),
   published: z.boolean().default(false),
