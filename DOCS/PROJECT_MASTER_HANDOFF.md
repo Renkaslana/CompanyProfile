@@ -5,7 +5,7 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M6 (News CMS — verified end-to-end + harness).
+Last update: end of Phase 4 M7 (Gallery CMS — verified end-to-end + harness).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -44,7 +44,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6 done. M3 skipped (approved). Remaining: M7–M11 (Gallery + Team/Clients + Stats/Settings + dashboard + verification). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7 done. M3 skipped (approved). Remaining: M8–M11 (Team/Clients + Stats/Settings + dashboard + verification). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |
@@ -351,8 +351,8 @@ AND respected by UI. Audit Log is readable. Build clean.
 | 4 | M4 Media Library UI | ✅ Complete (Cloudinary signed upload, reference-guarded delete, audit lifecycle verified end-to-end) |
 | 4 | M5 Services CMS | ✅ Complete (list / create / edit / reorder / publish toggle, MediaPicker cover, useActionState field-level validation, audit + revalidate `/layanan`) |
 | 4 | M6 News CMS (rich text, draft→publish→archive) | ✅ Complete (sanitized HTML body + status workflow with publishedAt-preservation semantics + force-dynamic on marketing routes + findNewsBySlug PUBLISHED filter + audit lifecycle CREATE/PUBLISH/UNPUBLISH/PUBLISH/ARCHIVE/RESTORE/DELETE) |
-| 4 | M7 Gallery CMS | ⏳ Pending — **next** |
-| 4 | M8 Team + Clients CMS | ⏳ Pending |
+| 4 | M7 Gallery CMS | ✅ Complete (list / create / edit / reorder / delete with required MediaPicker + free-form category with datalist suggestions + force-dynamic on `/galeri`) |
+| 4 | M8 Team + Clients CMS | ⏳ Pending — **next** |
 | 4 | M9 Stats + Settings CMS | ⏳ Pending |
 | 4 | M10 Dashboard expansion | ⏳ Pending |
 | 4 | M11 Verification + docs roll-up | ⏳ Pending |
@@ -622,7 +622,7 @@ When `/admin/audit` renders:
 | **Media Library** | n/a (referenced by content) | ✅ Phase 4 M4 | `/admin/media` — signed Cloudinary direct upload, edit (alt/title/tags), reference-guarded delete, audit lifecycle. JPG-MIME normalization fix applied. Cloudinary env: `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` (no `NEXT_PUBLIC_` prefix). |
 | **Services** | ✅ `lib/data.getServices()` | ✅ Phase 4 M5 | `/admin/services` — list / create / edit / reorder ↑↓ / publish toggle / delete. MediaPicker cover. Slug auto-derive + clash check. `useActionState` field-level validation with Indonesian Zod messages. Revalidates `/`, `/layanan`, `/layanan/[slug]`. |
 | **News** | ✅ `lib/data.getNews()` / `getLatestNews()` / `getNewsBySlug()` | ✅ Phase 4 M6 | `/admin/news` — list with status filter chips, create / edit / delete, status workflow (publish / unpublish / archive / restore) with publishedAt preservation. Sanitized HTML body (write + render). `findNewsBySlug` filters PUBLISHED. Revalidates `/`, `/berita`, `/berita/[slug]`. |
-| **Gallery** | ✅ `lib/data.getGallery()` | ⏳ M7 not started | Read path live. |
+| **Gallery** | ✅ `lib/data.getGallery()` | ✅ Phase 4 M7 | `/admin/gallery` — list with thumbnails + per-row reorder/edit/delete; required MediaPicker; free-form category with canonical-suggestions datalist (Briefing, Loading, Pengiriman, Warehouse, Fleet); revalidates `/`, `/galeri`. |
 | **Team** | ✅ `lib/data.getTeam()` | ⏳ M8 not started | Read path live. |
 | **Clients** | ✅ `lib/data.getClients()` | ⏳ M8 not started | Read path live. |
 | **Stats** | ✅ `lib/data.getStats()` | ⏳ M9 not started | Stat table seeded, all `source: MANUAL`. |
@@ -879,6 +879,17 @@ documentation)
   immediately on `/berita` thanks to `force-dynamic`. Also fixed a
   React 19 `<Fragment>` warning in `ConfirmDialog` (trigger prop is
   now typed `ReactElement`, no Fragment wrap).
+- **Phase 4 M6 follow-up fix:** `coverId` validator was `z.string().cuid()`
+  and rejected seeded `media:<path>` IDs. Added `mediaAssetId` Zod helper
+  in `lib/validation/common.ts` that accepts BOTH formats; used by both
+  M5 (Service.coverId) and M6 (NewsPost.coverId). Regression tested.
+- **Phase 4 M7:** Full Gallery lifecycle harnessed: create → update →
+  reorder (atomic `$transaction` swap) → delete. Schema accepts the
+  seeded `media:` FK format (verified via the same `mediaAssetId`
+  helper); 4 audit rows recorded with stable action constants. Live
+  preview MCP confirmed `/admin/gallery` renders 8 seeded items with
+  thumbnails + category badges + per-row buttons cleanly (no React
+  warnings).
 
 ### Known runtime artefact — stale build cache can hide new content
 
@@ -916,42 +927,41 @@ deferred to Phase 8).
 
 | # | Phase / Milestone | Key deliverable |
 |---|---|---|
-| 1 | **Phase 4 M7** Gallery CMS | `/admin/gallery` — list/create/edit/reorder/delete + category. |
-| 2 | **Phase 4 M8** Team + Clients CMS | `/admin/team` + `/admin/clients` — small CRUDs. |
-| 3 | **Phase 4 M9** Stats + Settings CMS | `/admin/stats` (Stat table) + `/admin/settings` (SiteSettings JSON forms with Zod schemas). |
-| 4 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
-| 5 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update. (Public-page `force-dynamic` already landed in M6.) |
-| 6 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
-| 7 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |
-| 8 | **Phase 7** Lead management | Real lead persistence + Turnstile + rate limit + status workflow + LeadActivity timeline. |
-| 9 | **Phase 8** Security hardening | CSP, **MFA UI**, append-only audit, EXIF strip, CORS lock, gitleaks, **advanced audit UX (filter/CSV/pagination)**. |
-| 10 | **Phase 9** Testing & stabilization | Vitest + RTL + Playwright + axe + CI gate. |
-| 11 | **Phase 10** Production readiness | Sentry, Vercel deploy, CI/CD, backups, runbooks, root README. |
+| 1 | **Phase 4 M8** Team + Clients CMS | `/admin/team` + `/admin/clients` — small CRUDs with optional MediaPicker. |
+| 2 | **Phase 4 M9** Stats + Settings CMS | `/admin/stats` (Stat table) + `/admin/settings` (SiteSettings JSON forms with Zod schemas). |
+| 3 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
+| 4 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update. (Public-page `force-dynamic` already landed in M6+M7.) |
+| 5 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
+| 6 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |
+| 7 | **Phase 7** Lead management | Real lead persistence + Turnstile + rate limit + status workflow + LeadActivity timeline. |
+| 8 | **Phase 8** Security hardening | CSP, **MFA UI**, append-only audit, EXIF strip, CORS lock, gitleaks, **advanced audit UX (filter/CSV/pagination)**. |
+| 9 | **Phase 9** Testing & stabilization | Vitest + RTL + Playwright + axe + CI gate. |
+| 10 | **Phase 10** Production readiness | Sentry, Vercel deploy, CI/CD, backups, runbooks, root README. |
 
 ---
 
 ## 17. Recommended Next Action
 
-**Begin Phase 4 M7 — Gallery CMS.**
+**Begin Phase 4 M8 — Team + Clients CMS.**
 
-### Why M7 next
-- M6 is complete; the form-state + audit + revalidate patterns are now
-  proven across two content modules (M5 + M6).
-- Gallery is the simplest remaining CMS — no rich text, no status
-  workflow, just CRUD + reorder + category. Quick win.
+### Why M8 next
+- M7 is complete; the CMS module pattern is proven across three content
+  domains (M5/M6/M7).
+- Team + Clients are two small CRUDs that share the M7 shape (no
+  workflow, no rich text). M8 ships **two modules at once** because each
+  is small.
 
-### What M7 will deliver
-- `/admin/gallery` list (all items, ordered by `order` ASC).
-- Create / edit form (title, category, media picker, order).
-- Reorder ↑↓ buttons identical to M5.
-- Delete with ConfirmDialog.
-- Audit `GALLERY_CREATE / GALLERY_UPDATE / GALLERY_DELETE` (already in
-  AUDIT_ACTIONS).
-- Revalidate `/galeri`.
+### What M8 will deliver
+- `/admin/team` — list/create/edit/reorder/delete + name, role,
+  optional photo (MediaPicker), order.
+- `/admin/clients` — list/create/edit/reorder/delete + name,
+  optional sector, optional URL, optional logo (MediaPicker), order.
+- Audit `TEAM_*` and `CLIENT_*` (constants already declared).
+- Revalidate `/tentang` (team grid) + `/` (clients/partners section).
+- `force-dynamic` on `/tentang`.
 
-### What M7 does NOT include
-- Lightbox UX on the marketing page (already exists in the public render).
-- Bulk upload (Phase 8 polish).
+### What M8 does NOT include
+- Bulk import (CSV) — Phase 8.
 
 ---
 
@@ -1013,8 +1023,8 @@ deferred to Phase 8).
   `components/admin/sanitized-html.tsx`).
 
 ### What to start next
-**Phase 4 M7 — Gallery CMS.** See §17. Reuse the M5 Services CMS shape
-(no rich text, no status workflow — gallery is the simplest module).
+**Phase 4 M8 — Team + Clients CMS.** See §17. Reuse the M7 pattern
+(two small CRUDs in one milestone since each is light).
 
 ### Communication style
 - Reports should include: summary, files created, files modified, schema

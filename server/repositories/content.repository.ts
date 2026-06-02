@@ -161,6 +161,40 @@ export const ContentRepository = {
     return db.galleryItem.findMany({ orderBy: { order: "asc" } });
   },
 
+  /* ── Gallery — admin (Phase 4 M7) ──────────────────────────────────── */
+
+  async findAllGallery(): Promise<GalleryItem[]> {
+    return db.galleryItem.findMany({ orderBy: { order: "asc" } });
+  },
+
+  async findGalleryById(id: string): Promise<GalleryItem | null> {
+    return db.galleryItem.findUnique({ where: { id } });
+  },
+
+  async createGalleryItem(data: Prisma.GalleryItemCreateInput): Promise<GalleryItem> {
+    return db.galleryItem.create({ data });
+  },
+
+  async updateGalleryItem(id: string, data: Prisma.GalleryItemUpdateInput): Promise<GalleryItem> {
+    return db.galleryItem.update({ where: { id }, data });
+  },
+
+  async deleteGalleryItem(id: string): Promise<GalleryItem> {
+    return db.galleryItem.delete({ where: { id } });
+  },
+
+  async swapGalleryOrders(a: { id: string; order: number }, b: { id: string; order: number }) {
+    await db.$transaction([
+      db.galleryItem.update({ where: { id: a.id }, data: { order: b.order } }),
+      db.galleryItem.update({ where: { id: b.id }, data: { order: a.order } }),
+    ]);
+  },
+
+  async getNextGalleryOrder(): Promise<number> {
+    const last = await db.galleryItem.findFirst({ orderBy: { order: "desc" }, select: { order: true } });
+    return (last?.order ?? -1) + 1;
+  },
+
   /* ── Team ─────────────────────────────────────────────────────────────── */
 
   /** All team members, ordered by `order` ASC. */

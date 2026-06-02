@@ -32,6 +32,7 @@ const ROUTE_GUARDS: Array<{ prefix: string; perm: string }> = [
   { prefix: "/admin/media", perm: "media:create" },
   { prefix: "/admin/services", perm: "content:read" },
   { prefix: "/admin/news", perm: "content:read" },
+  { prefix: "/admin/gallery", perm: "content:read" },
   { prefix: "/admin/settings", perm: "settings:write" },
 ];
 

@@ -5,6 +5,10 @@ import { GalleryGrid } from "@/features/content/components/gallery-grid";
 import { getGallery } from "@/lib/data";
 import { galleryCategories } from "@/mock/gallery.mock";
 
+// Phase 4 M7: render fresh on every request so newly-added items appear
+// immediately on the public gallery.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Galeri Operasional",
   description:
