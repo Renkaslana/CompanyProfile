@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Boxes,
+  Building2,
   Images,
   ImageIcon,
   LayoutDashboard,
@@ -10,6 +11,7 @@ import {
   Package,
   ScrollText,
   Users,
+  Users2,
 } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { Logo } from "@/components/layout/logo";
@@ -22,6 +24,8 @@ const NAV: NavLink[] = [
   { href: "/admin/services", label: "Layanan", icon: Package, perm: "content:read" },
   { href: "/admin/news", label: "Berita", icon: Newspaper, perm: "content:read" },
   { href: "/admin/gallery", label: "Galeri", icon: Images, perm: "content:read" },
+  { href: "/admin/team", label: "Tim", icon: Users2, perm: "content:read" },
+  { href: "/admin/clients", label: "Klien", icon: Building2, perm: "content:read" },
   { href: "/admin/media", label: "Media", icon: ImageIcon, perm: "media:create" },
   { href: "/admin/users", label: "Pengguna", icon: Users, perm: "users:manage" },
   { href: "/admin/audit", label: "Audit Log", icon: ScrollText, perm: "audit:read" },

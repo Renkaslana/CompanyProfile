@@ -11,6 +11,10 @@ import { StatsBar } from "@/components/sections/stats-bar";
 import { COMPANY, VALUES } from "@/lib/constants";
 import { getStats, getTeam } from "@/lib/data";
 
+// Phase 4 M8: render fresh on every request so team/stat changes from the
+// CMS appear immediately.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Tentang Kami",
   description: `Mengenal ${COMPANY.legalName} — perusahaan logistik dan transportasi yang melayani distribusi B2B di seluruh Indonesia.`,

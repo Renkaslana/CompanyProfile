@@ -22,6 +22,9 @@ import type {
 } from "@prisma/client";
 import { db } from "@/lib/db";
 
+// (M8) shared admin extension helpers below — Team + Clients use the same
+// reorder-swap + getNextOrder pattern as Services + Gallery.
+
 /**
  * `NewsPost` rows always come with the author's display name selected so the
  * service layer can fall back to it when `displayAuthor` is null.
@@ -202,10 +205,78 @@ export const ContentRepository = {
     return db.teamMember.findMany({ orderBy: { order: "asc" } });
   },
 
+  /* ── Team — admin (Phase 4 M8) ──────────────────────────────────────── */
+
+  async findAllTeam(): Promise<TeamMember[]> {
+    return db.teamMember.findMany({ orderBy: { order: "asc" } });
+  },
+
+  async findTeamById(id: string): Promise<TeamMember | null> {
+    return db.teamMember.findUnique({ where: { id } });
+  },
+
+  async createTeamMember(data: Prisma.TeamMemberCreateInput): Promise<TeamMember> {
+    return db.teamMember.create({ data });
+  },
+
+  async updateTeamMember(id: string, data: Prisma.TeamMemberUpdateInput): Promise<TeamMember> {
+    return db.teamMember.update({ where: { id }, data });
+  },
+
+  async deleteTeamMember(id: string): Promise<TeamMember> {
+    return db.teamMember.delete({ where: { id } });
+  },
+
+  async swapTeamOrders(a: { id: string; order: number }, b: { id: string; order: number }) {
+    await db.$transaction([
+      db.teamMember.update({ where: { id: a.id }, data: { order: b.order } }),
+      db.teamMember.update({ where: { id: b.id }, data: { order: a.order } }),
+    ]);
+  },
+
+  async getNextTeamOrder(): Promise<number> {
+    const last = await db.teamMember.findFirst({ orderBy: { order: "desc" }, select: { order: true } });
+    return (last?.order ?? -1) + 1;
+  },
+
   /* ── Clients ──────────────────────────────────────────────────────────── */
 
   /** All client logos, ordered by `order` ASC. */
   async findClients(): Promise<ClientLogo[]> {
     return db.clientLogo.findMany({ orderBy: { order: "asc" } });
+  },
+
+  /* ── Clients — admin (Phase 4 M8) ───────────────────────────────────── */
+
+  async findAllClients(): Promise<ClientLogo[]> {
+    return db.clientLogo.findMany({ orderBy: { order: "asc" } });
+  },
+
+  async findClientById(id: string): Promise<ClientLogo | null> {
+    return db.clientLogo.findUnique({ where: { id } });
+  },
+
+  async createClientLogo(data: Prisma.ClientLogoCreateInput): Promise<ClientLogo> {
+    return db.clientLogo.create({ data });
+  },
+
+  async updateClientLogo(id: string, data: Prisma.ClientLogoUpdateInput): Promise<ClientLogo> {
+    return db.clientLogo.update({ where: { id }, data });
+  },
+
+  async deleteClientLogo(id: string): Promise<ClientLogo> {
+    return db.clientLogo.delete({ where: { id } });
+  },
+
+  async swapClientOrders(a: { id: string; order: number }, b: { id: string; order: number }) {
+    await db.$transaction([
+      db.clientLogo.update({ where: { id: a.id }, data: { order: b.order } }),
+      db.clientLogo.update({ where: { id: b.id }, data: { order: a.order } }),
+    ]);
+  },
+
+  async getNextClientOrder(): Promise<number> {
+    const last = await db.clientLogo.findFirst({ orderBy: { order: "desc" }, select: { order: true } });
+    return (last?.order ?? -1) + 1;
   },
 };
