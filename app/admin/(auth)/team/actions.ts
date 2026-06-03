@@ -30,6 +30,7 @@ function readForm(formData: FormData) {
   return {
     name: (formData.get("name") as string | null)?.trim() ?? "",
     role: (formData.get("role") as string | null)?.trim() ?? "",
+    bio: (formData.get("bio") as string | null)?.trim() ?? "",
     photoIdRaw: ((formData.get("photoId") as string | null) ?? "").trim(),
     orderRaw: (formData.get("order") as string | null) ?? "",
   };
@@ -40,6 +41,7 @@ function buildSummary(fe: TeamFormState["fieldErrors"]): string {
   const labels: Record<string, string> = {
     name: "Nama",
     role: "Jabatan",
+    bio: "Bio",
     photoId: "Foto",
     order: "Urutan",
   };
@@ -57,12 +59,14 @@ export async function createTeamAction(
   const echo: TeamFormState["values"] = {
     name: v.name,
     role: v.role,
+    bio: v.bio,
     photoId: v.photoIdRaw || null,
     order: v.orderRaw,
   };
   const parsed = teamCreateSchema.safeParse({
     name: v.name,
     role: v.role,
+    bio: v.bio,
     photoId: v.photoIdRaw || null,
     order: Number(v.orderRaw || 0) || 0,
   });
@@ -73,7 +77,13 @@ export async function createTeamAction(
   }
   try {
     await TeamCmsService.create(
-      { ...parsed.data, photoId: parsed.data.photoId ? parsed.data.photoId : null },
+      {
+        name: parsed.data.name,
+        role: parsed.data.role,
+        bio: parsed.data.bio ? parsed.data.bio : null,
+        photoId: parsed.data.photoId ? parsed.data.photoId : null,
+        order: parsed.data.order,
+      },
       session,
     );
     revalidatePublic();
@@ -95,6 +105,7 @@ export async function updateTeamAction(
   const echo: TeamFormState["values"] = {
     name: v.name,
     role: v.role,
+    bio: v.bio,
     photoId: v.photoIdRaw || null,
     order: v.orderRaw,
   };
@@ -102,6 +113,7 @@ export async function updateTeamAction(
     id,
     name: v.name,
     role: v.role,
+    bio: v.bio,
     photoId: v.photoIdRaw || null,
     order: Number(v.orderRaw || 0) || 0,
   });
@@ -116,6 +128,7 @@ export async function updateTeamAction(
       {
         name: parsed.data.name,
         role: parsed.data.role,
+        bio: parsed.data.bio ? parsed.data.bio : null,
         photoId: parsed.data.photoId ? parsed.data.photoId : null,
         order: parsed.data.order,
       },

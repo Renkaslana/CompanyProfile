@@ -164,6 +164,8 @@ model TeamMember {
   id      String  @id @default(cuid())
   name    String
   role    String
+  /// Short optional public bio (≤500 chars). Phase 4 M9. Sanitized on write.
+  bio     String?
   photoId String?
   order   Int     @default(0)
 }

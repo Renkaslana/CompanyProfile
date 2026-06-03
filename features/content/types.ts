@@ -65,6 +65,8 @@ export interface TeamMember {
   role: string;
   /** optional — when absent, an initials avatar is rendered */
   photo?: MediaRef;
+  /** optional short bio (≤500 chars). Added in Phase 4 M9. */
+  bio?: string;
   order: number;
 }
 

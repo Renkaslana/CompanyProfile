@@ -41,6 +41,7 @@ export default async function EditTeamPage({ params }: { params: Params }) {
           id: member.id,
           name: member.name,
           role: member.role,
+          bio: member.bio ?? "",
           photoId: member.photoId,
           order: member.order,
         }}

@@ -19,6 +19,13 @@ const role = z
   .min(2, "Jabatan minimal 2 karakter.")
   .max(120, "Jabatan maksimal 120 karakter.");
 
+const bio = z
+  .string()
+  .trim()
+  .max(500, "Bio maksimal 500 karakter.")
+  .optional()
+  .or(z.literal(""));
+
 const order = z
   .number({ message: "Urutan harus berupa angka." })
   .int("Urutan harus bilangan bulat.")
@@ -28,6 +35,7 @@ const order = z
 const baseFields = {
   name,
   role,
+  bio,
   /** Optional — fallback is initials avatar on the public page. */
   photoId: mediaAssetId.nullable().optional().or(z.literal("")),
   order: order.default(0),
@@ -43,11 +51,12 @@ export const teamIdSchema = z.object({ id: entityId });
 
 export type TeamFormState = {
   ok: false;
-  fieldErrors: Partial<Record<"name" | "role" | "photoId" | "order", string[]>>;
+  fieldErrors: Partial<Record<"name" | "role" | "bio" | "photoId" | "order", string[]>>;
   message: string;
   values: {
     name: string;
     role: string;
+    bio: string;
     photoId: string | null;
     order: string;
   };

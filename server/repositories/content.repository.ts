@@ -19,6 +19,7 @@ import type {
   GalleryItem,
   TeamMember,
   ClientLogo,
+  Stat,
 } from "@prisma/client";
 import { db } from "@/lib/db";
 
@@ -278,5 +279,26 @@ export const ContentRepository = {
   async getNextClientOrder(): Promise<number> {
     const last = await db.clientLogo.findFirst({ orderBy: { order: "desc" }, select: { order: true } });
     return (last?.order ?? -1) + 1;
+  },
+
+  /* ── Stats — admin (Phase 4 M9) ────────────────────────────────────── */
+
+  async findAllStats(): Promise<Stat[]> {
+    return db.stat.findMany({ orderBy: { order: "asc" } });
+  },
+
+  async findStatByKey(key: string): Promise<Stat | null> {
+    return db.stat.findUnique({ where: { key } });
+  },
+
+  async updateStatByKey(key: string, data: Prisma.StatUpdateInput): Promise<Stat> {
+    return db.stat.update({ where: { key }, data });
+  },
+
+  async swapStatOrders(a: { key: string; order: number }, b: { key: string; order: number }) {
+    await db.$transaction([
+      db.stat.update({ where: { key: a.key }, data: { order: b.order } }),
+      db.stat.update({ where: { key: b.key }, data: { order: a.order } }),
+    ]);
   },
 };

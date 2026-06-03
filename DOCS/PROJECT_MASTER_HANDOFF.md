@@ -5,7 +5,7 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M8 (Team + Clients CMS — verified end-to-end + harness).
+Last update: end of Phase 4 M9 (Stats + Settings CMS + public Team/Client render + Team bio + migration).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -44,7 +44,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8 done. M3 skipped (approved). Remaining: M9–M11 (Stats/Settings + dashboard + verification). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9 done. M3 skipped (approved). Remaining: M10–M11 (dashboard + verification). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |
@@ -353,8 +353,8 @@ AND respected by UI. Audit Log is readable. Build clean.
 | 4 | M6 News CMS (rich text, draft→publish→archive) | ✅ Complete (sanitized HTML body + status workflow with publishedAt-preservation semantics + force-dynamic on marketing routes + findNewsBySlug PUBLISHED filter + audit lifecycle CREATE/PUBLISH/UNPUBLISH/PUBLISH/ARCHIVE/RESTORE/DELETE) |
 | 4 | M7 Gallery CMS | ✅ Complete (list / create / edit / reorder / delete with required MediaPicker + free-form category with datalist suggestions + force-dynamic on `/galeri`) |
 | 4 | M8 Team + Clients CMS | ✅ Complete (two CRUDs sharing the M7 pattern — list/create/edit/reorder/delete, optional MediaPicker for photo/logo, useActionState + Indonesian Zod messages, audit + revalidate `/tentang` and `/`, force-dynamic on `/tentang`) |
-| 4 | M9 Stats + Settings CMS | ⏳ Pending — **next** |
-| 4 | M10 Dashboard expansion | ⏳ Pending |
+| 4 | M9 Stats + Settings CMS | ✅ Complete (4-row Stat editor with MANUAL/DERIVED toggle, full Settings form for identitas/cerita/visi/misi/values/alamat/kontak/jam/legal/sosial, public Team photo + Client logo render, Team bio field + migration, hybrid `getSiteSettings()` overlay, public `/tentang` reads CMS values + new Visi/Misi block) |
+| 4 | M10 Dashboard expansion | ⏳ Pending — **next** |
 | 4 | M11 Verification + docs roll-up | ⏳ Pending |
 | **5** | Fleet management | ⏳ Pending |
 | **6** | Support Center (FAQ + escalation, no AI) | ⏳ Pending |
@@ -399,6 +399,10 @@ Prisma; total varies depending on how you count `String[]` columns.)*
 **Phase 4 M4 and M5 added no schema changes** — both shipped against the
 existing `MediaAsset` and `Service` tables. No migrations were authored
 between Phase 4 M1 and the current point.
+
+5. `20260603100000_phase4_m9_team_bio` — Phase 4 M9: adds nullable
+   `TeamMember.bio` (TEXT, optional ≤500 char). Additive,
+   backward-compatible.
 
 `prisma migrate dev` requires interactive TTY which the Bash tool can't
 provide — so all migrations are authored as SQL files + applied via
@@ -623,10 +627,10 @@ When `/admin/audit` renders:
 | **Services** | ✅ `lib/data.getServices()` | ✅ Phase 4 M5 | `/admin/services` — list / create / edit / reorder ↑↓ / publish toggle / delete. MediaPicker cover. Slug auto-derive + clash check. `useActionState` field-level validation with Indonesian Zod messages. Revalidates `/`, `/layanan`, `/layanan/[slug]`. **Primary key validated via `entityId`** (c1908ad) so seeded `svc-…` rows can be edited. |
 | **News** | ✅ `lib/data.getNews()` / `getLatestNews()` / `getNewsBySlug()` | ✅ Phase 4 M6 | `/admin/news` — list with status filter chips, create / edit / delete, status workflow (publish / unpublish / archive / restore) with publishedAt preservation. Sanitized HTML body (write + render). `findNewsBySlug` filters PUBLISHED. Revalidates `/`, `/berita`, `/berita/[slug]`. **Primary key validated via `entityId`** (c1908ad) so seeded `news-N` rows can be edited. |
 | **Gallery** | ✅ `lib/data.getGallery()` | ✅ Phase 4 M7 | `/admin/gallery` — list with thumbnails + per-row reorder/edit/delete; required MediaPicker; free-form category with canonical-suggestions datalist (Briefing, Loading, Pengiriman, Warehouse, Fleet); revalidates `/`, `/galeri`. **Primary key validated via `entityId`** (c1908ad) so seeded `gal-…` rows can be edited. |
-| **Team** | ✅ `lib/data.getTeam()` | ✅ Phase 4 M8 | `/admin/team` — list with circular photo / initials avatar; reorder/edit/delete. Optional MediaPicker photo. Audit `TEAM_*` + revalidates `/tentang`, `/`. Primary key via `entityId`. |
-| **Clients** | ✅ `lib/data.getClients()` | ✅ Phase 4 M8 | `/admin/clients` — list with logo thumbnail + sector badge + external URL link; reorder/edit/delete. Optional sector + URL + MediaPicker logo. Audit `CLIENT_*` + revalidates `/`. Primary key via `entityId`. |
-| **Stats** | ✅ `lib/data.getStats()` | ⏳ M9 not started | Stat table seeded, all `source: MANUAL`. |
-| **Settings** | ✅ `lib/data` reads COMPANY+VALUES JSON | ⏳ M9 not started | SiteSettings JSON seeded. |
+| **Team** | ✅ `lib/data.getTeam()` | ✅ Phase 4 M8 + M9 | `/admin/team` — list with circular photo / initials avatar; reorder/edit/delete. Optional MediaPicker photo. M9 added optional `bio` field (≤500 chars). Public `/tentang` TeamGrid now renders the photo when set (initials fallback) and the bio under role. Audit `TEAM_*` + revalidates `/tentang`, `/`. |
+| **Clients** | ✅ `lib/data.getClients()` | ✅ Phase 4 M8 + M9 | `/admin/clients` — list with logo thumbnail + sector badge + external URL link; reorder/edit/delete. Optional sector + URL + MediaPicker logo. Public homepage band now renders the logo when set (grayscale→color on hover) with external link to `client.url`. Audit `CLIENT_*` + revalidates `/`. |
+| **Stats** | ✅ `lib/data.getStats()` | ✅ Phase 4 M9 | `/admin/stats` — fixed-size 4-row editor; `key` immutable; MANUAL/DERIVED toggle freezes value+label when DERIVED. `STAT_UPDATE` audit on every save. |
+| **Settings** | ✅ `lib/data.getSiteSettings()` (hybrid overlay) | ✅ Phase 4 M9 | `/admin/settings` — single tabbed form covering Identitas, Cerita, Visi & Misi, Nilai Inti, Alamat, Kontak & Jam, Legal, Sosial. Writes `SiteSettings.company` + `values` JSON; full Zod validation per field with dotted error paths. `SETTINGS_UPDATE` audit. Public `/tentang` now reads CMS story/visi/misi/values; constants act as fallback floor. |
 | **Fleet** | ✅ `lib/data.getFleet()` | ⏳ Phase 5 (its own dedicated module) | Read path live. |
 | **FAQ + Support Center** | ⏳ Phase 6 not started | ⏳ Phase 6 not started | Tables empty by design; seed when UI lands. |
 | **Leads** | ⏳ Phase 7 not started | ⏳ Phase 7 not started | Public lead form simulates submit today. |
@@ -949,8 +953,7 @@ deferred to Phase 8).
 
 | # | Phase / Milestone | Key deliverable |
 |---|---|---|
-| 1 | **Phase 4 M9** Stats + Settings CMS | `/admin/stats` (Stat table — `value`/`label`/`suffix` per row, source enum for future DERIVED) + `/admin/settings` (SiteSettings JSON forms with Zod schemas). |
-| 2 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
+| 1 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
 | 3 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update. (Public-page `force-dynamic` already landed in M6+M7+M8.) |
 | 4 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
 | 5 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |

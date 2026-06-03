@@ -22,6 +22,7 @@ export type TeamFormInitial = {
   id?: string;
   name: string;
   role: string;
+  bio: string;
   photoId: string | null;
   order: number;
 };
@@ -53,6 +54,7 @@ function SubmitButton({ mode }: { mode: "create" | "edit" }) {
 export function TeamForm({ mode, initial, mediaAssets, action }: Props) {
   const nameId = useId();
   const roleId = useId();
+  const bioId = useId();
   const orderId = useId();
   const [state, formAction] = useActionState<TeamFormState | null, FormData>(action, null);
   const v = state?.values;
@@ -107,6 +109,22 @@ export function TeamForm({ mode, initial, mediaAssets, action }: Props) {
             maxLength={120}
             required
             aria-invalid={Boolean(fe?.role)}
+          />
+        </FormField>
+        <FormField
+          label="Bio (opsional)"
+          htmlFor={bioId}
+          hint="Singkat — 1–3 kalimat. Maksimum 500 karakter. Tampil di bawah jabatan di halaman /tentang."
+          error={fe?.bio?.[0]}
+        >
+          <textarea
+            id={bioId}
+            name="bio"
+            defaultValue={v?.bio ?? initial.bio}
+            maxLength={500}
+            rows={4}
+            aria-invalid={Boolean(fe?.bio)}
+            className="min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         </FormField>
       </FormSection>

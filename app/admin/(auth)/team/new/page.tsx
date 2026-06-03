@@ -33,7 +33,7 @@ export default async function NewTeamPage() {
       </header>
       <TeamForm
         mode="create"
-        initial={{ name: "", role: "", photoId: null, order: 0 }}
+        initial={{ name: "", role: "", bio: "", photoId: null, order: 0 }}
         mediaAssets={mediaAssets}
         action={createTeamAction}
       />

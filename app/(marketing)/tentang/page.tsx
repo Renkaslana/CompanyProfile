@@ -8,8 +8,8 @@ import { TeamGrid } from "@/features/content/components/team-grid";
 import { Reveal } from "@/components/motion/reveal";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { StatsBar } from "@/components/sections/stats-bar";
-import { COMPANY, VALUES } from "@/lib/constants";
-import { getStats, getTeam } from "@/lib/data";
+import { COMPANY } from "@/lib/constants";
+import { getStats, getTeam, getSiteSettings } from "@/lib/data";
 
 // Phase 4 M8: render fresh on every request so team/stat changes from the
 // CMS appear immediately.
@@ -19,16 +19,17 @@ export const metadata: Metadata = {
   title: "Tentang Kami",
   description: `Mengenal ${COMPANY.legalName} — perusahaan logistik dan transportasi yang melayani distribusi B2B di seluruh Indonesia.`,
 };
+void COMPANY; // referenced by metadata; keeps lint happy if Body switches to settings.
 
 export default async function TentangPage() {
-  const [team, stats] = await Promise.all([getTeam(), getStats()]);
+  const [team, stats, settings] = await Promise.all([getTeam(), getStats(), getSiteSettings()]);
 
   return (
     <>
       <PageHeader
         eyebrow="Tentang Kami"
         title="Membangun kepercayaan lewat operasional yang nyata"
-        description={COMPANY.tagline}
+        description={settings.tagline}
         breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Tentang" }]}
       />
 
@@ -47,17 +48,12 @@ export default async function TentangPage() {
               />
             </Reveal>
             <div>
-              <SectionHeading
-                eyebrow="Cerita Kami"
-                title="Dari armada pertama hingga jaringan nasional"
-                description={`Berdiri sejak ${COMPANY.foundedYear}, ${COMPANY.legalName} tumbuh dari layanan transportasi sederhana menjadi mitra logistik terintegrasi. Fokus kami tak pernah berubah: menggerakkan barang dengan tepat waktu, aman, dan terpantau.`}
-              />
-              <p className="mt-5 leading-relaxed text-muted-foreground">
-                Kami melayani perusahaan lintas industri ritel, manufaktur,
-                FMCG, hingga konstruksi dengan kombinasi armada yang andal, tim
-                profesional, dan proses yang disiplin. Setiap pengiriman adalah
-                komitmen yang kami jaga.
-              </p>
+              <SectionHeading eyebrow="Cerita Kami" title={settings.story.headline} />
+              {settings.story.paragraphs.map((p, i) => (
+                <p key={i} className="mt-5 leading-relaxed text-muted-foreground">
+                  {p}
+                </p>
+              ))}
             </div>
           </div>
 
@@ -67,8 +63,39 @@ export default async function TentangPage() {
         </div>
       </section>
 
+      {/* Visi & Misi (M9 — CMS-managed) */}
+      {(settings.visi || settings.misi.length > 0) && (
+        <section className="bg-background py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+              {settings.visi && (
+                <Reveal>
+                  <SectionHeading eyebrow="Visi" title="Arah perjalanan kami" />
+                  <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+                    {settings.visi}
+                  </p>
+                </Reveal>
+              )}
+              {settings.misi.length > 0 && (
+                <Reveal y={20}>
+                  <SectionHeading eyebrow="Misi" title="Komitmen kami" />
+                  <ul className="mt-5 space-y-3">
+                    {settings.misi.map((m, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-brand-orange" />
+                        <span className="leading-relaxed text-muted-foreground">{m}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Reveal>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Values */}
-      <section className="bg-background py-20 sm:py-28">
+      <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             align="center"
@@ -79,7 +106,7 @@ export default async function TentangPage() {
             className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
             gap={0.08}
           >
-            {VALUES.map((v) => (
+            {settings.values.map((v) => (
               <StaggerItem key={v.title} className="h-full">
                 <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
                   <CheckCircle2 className="size-6 text-brand-orange" />

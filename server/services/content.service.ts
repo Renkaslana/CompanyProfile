@@ -101,6 +101,7 @@ function toFrontendTeam(
     const photo = toMediaRefOrUndefined(media.get(row.photoId));
     if (photo) base.photo = photo;
   }
+  if (row.bio) base.bio = row.bio;
   return base;
 }
 

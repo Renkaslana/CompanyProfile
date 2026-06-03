@@ -22,6 +22,7 @@ export class TeamNotFoundError extends Error {
 type WriteFields = {
   name: string;
   role: string;
+  bio: string | null;
   photoId: string | null;
   order: number;
 };
@@ -44,6 +45,7 @@ export const TeamCmsService = {
     const created = await ContentRepository.createTeamMember({
       name: input.name,
       role: input.role,
+      bio: input.bio,
       photoId: input.photoId,
       order: orderValue,
     });
@@ -64,6 +66,7 @@ export const TeamCmsService = {
     const updated = await ContentRepository.updateTeamMember(id, {
       name: input.name,
       role: input.role,
+      bio: input.bio,
       photoId: input.photoId,
       order: input.order,
     });

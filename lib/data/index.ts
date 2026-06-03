@@ -18,6 +18,8 @@ import { ContentService } from "@/server/services/content.service";
 import { FleetService } from "@/server/services/fleet.service";
 import { MarketingService } from "@/server/services/marketing.service";
 
+export { getSiteSettings } from "./settings";
+
 import type {
   Service,
   NewsPost,
