@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionHeading } from "@/components/sections/section-heading";
 import { ImageFrame } from "@/components/image-frame";
+import { CoverageMap } from "@/components/sections/coverage-map";
 import { CtaBand } from "@/components/sections/cta-band";
 import { TeamGrid } from "@/features/content/components/team-grid";
 import { Reveal } from "@/components/motion/reveal";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { StatsBar } from "@/components/sections/stats-bar";
 import { COMPANY } from "@/lib/constants";
-import { getStats, getTeam, getSiteSettings } from "@/lib/data";
+import { getCoverage, getStats, getTeam, getSiteSettings } from "@/lib/data";
 
 // Phase 4 M8: render fresh on every request so team/stat changes from the
 // CMS appear immediately.
@@ -22,7 +23,13 @@ export const metadata: Metadata = {
 void COMPANY; // referenced by metadata; keeps lint happy if Body switches to settings.
 
 export default async function TentangPage() {
-  const [team, stats, settings] = await Promise.all([getTeam(), getStats(), getSiteSettings()]);
+  const [team, stats, settings, coverage] = await Promise.all([
+    getTeam(),
+    getStats(),
+    getSiteSettings(),
+    getCoverage(),
+  ]);
+  const yearsActive = new Date().getFullYear() - settings.foundedYear;
 
   return (
     <>
@@ -36,6 +43,14 @@ export default async function TentangPage() {
       {/* Story */}
       <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Years-active callout */}
+          <Reveal>
+            <div className="mb-12 inline-flex items-center gap-3 rounded-full border border-brand-orange/25 bg-brand-orange/5 px-4 py-2 text-sm font-medium text-brand-orange-strong">
+              <Clock className="size-4" />
+              {yearsActive}+ tahun pengalaman · sejak {settings.foundedYear}
+            </div>
+          </Reveal>
+
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <Reveal>
               <ImageFrame
@@ -123,6 +138,50 @@ export default async function TentangPage() {
         </div>
       </section>
 
+      {/* Coverage Area (Phase 4 M10 — reuses homepage CoverageMap component) */}
+      <CoverageMap regions={coverage} />
+
+      {/* Why trust us — strip of trust signals (Phase 4 M10) */}
+      <section className="bg-background py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            align="center"
+            eyebrow="Mengapa BMI"
+            title="Pilar kepercayaan yang kami jaga"
+          />
+          <Stagger className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" gap={0.08}>
+            {[
+              {
+                title: "Badan Usaha Resmi",
+                body: `${settings.legal.entity} terdaftar NIB ${settings.legal.nib}.`,
+              },
+              {
+                title: "Operasional 24/7",
+                body: settings.operationalHours,
+              },
+              {
+                title: "Jangkauan Nasional",
+                body: `Beroperasi dari ${settings.city}, ${settings.province} hingga seluruh nusantara.`,
+              },
+              {
+                title: "Kontak Langsung",
+                body: `Tim respons cepat via ${settings.phone} atau ${settings.whatsapp}.`,
+              },
+            ].map((b) => (
+              <StaggerItem key={b.title} className="h-full">
+                <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <CheckCircle2 className="size-6 text-brand-orange" />
+                  <h3 className="mt-4 font-display text-base font-semibold text-ink-900">
+                    {b.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{b.body}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </div>
+      </section>
+
       {/* Team */}
       <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -134,6 +193,26 @@ export default async function TentangPage() {
           />
           <div className="mt-12">
             <TeamGrid members={team} />
+          </div>
+        </div>
+      </section>
+
+      {/* Office location strip */}
+      <section className="bg-background py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-start gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:gap-6 sm:p-8">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange">
+              <MapPin className="size-6" />
+            </span>
+            <div className="flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Kantor Pusat
+              </p>
+              <p className="mt-1 text-sm font-medium text-ink-900">
+                {settings.address}, {settings.city}, {settings.province}{" "}
+                {settings.postalCode}, {settings.country}
+              </p>
+            </div>
           </div>
         </div>
       </section>

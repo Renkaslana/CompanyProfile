@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +26,16 @@ const EMPTY: LeadFormValues = {
   message: "",
 };
 
+// Phase 4 M10: standardize input + label styling for readability
+const labelCls = "text-sm font-medium text-ink-900";
+const inputCls =
+  "mt-1.5 h-10 border-input bg-card text-ink-900 placeholder:text-foreground/40 focus-visible:border-brand-orange focus-visible:ring-brand-orange/30";
+
 export function LeadForm({ className }: { className?: string }) {
   const [values, setValues] = useState<LeadFormValues>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   function update<K extends keyof LeadFormValues>(key: K, v: string) {
     setValues((prev) => ({ ...prev, [key]: v }));
@@ -63,62 +69,104 @@ export function LeadForm({ className }: { className?: string }) {
     });
     setValues(EMPTY);
     setErrors({});
+    setSubmitted(true);
   }
 
   const fieldError = (k: string) =>
     errors[k] ? (
-      <p className="mt-1 text-xs text-destructive">{errors[k]}</p>
+      <p className="mt-1 text-xs font-medium text-destructive">{errors[k]}</p>
     ) : null;
+
+  if (submitted) {
+    return (
+      <div
+        role="status"
+        className={cn(
+          "flex flex-col items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900",
+          className,
+        )}
+      >
+        <span className="inline-flex size-11 items-center justify-center rounded-full bg-emerald-500 text-white">
+          <CheckCircle2 className="size-6" />
+        </span>
+        <div>
+          <h3 className="font-display text-lg font-semibold text-ink-900">
+            Terima kasih! Pesan Anda terkirim.
+          </h3>
+          <p className="mt-1 text-sm leading-relaxed text-foreground/70">
+            Tim BMI akan menghubungi Anda secepatnya — biasanya dalam
+            beberapa jam kerja.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setSubmitted(false)}
+          className="border-emerald-300 text-emerald-900 hover:bg-emerald-100"
+        >
+          Kirim permintaan lain
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} noValidate className={cn("space-y-4", className)}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="name">Nama lengkap *</Label>
+          <Label htmlFor="name" className={labelCls}>
+            Nama lengkap <span className="text-destructive">*</span>
+          </Label>
           <Input
             id="name"
             value={values.name}
             onChange={(e) => update("name", e.target.value)}
             placeholder="Nama Anda"
-            className="mt-1.5"
+            className={inputCls}
             aria-invalid={!!errors.name}
           />
           {fieldError("name")}
         </div>
         <div>
-          <Label htmlFor="company">Perusahaan</Label>
+          <Label htmlFor="company" className={labelCls}>
+            Perusahaan
+          </Label>
           <Input
             id="company"
             value={values.company ?? ""}
             onChange={(e) => update("company", e.target.value)}
             placeholder="Nama perusahaan"
-            className="mt-1.5"
+            className={inputCls}
           />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="email">Email *</Label>
+          <Label htmlFor="email" className={labelCls}>
+            Email <span className="text-destructive">*</span>
+          </Label>
           <Input
             id="email"
             type="email"
             value={values.email}
             onChange={(e) => update("email", e.target.value)}
             placeholder="nama@perusahaan.co.id"
-            className="mt-1.5"
+            className={inputCls}
             aria-invalid={!!errors.email}
           />
           {fieldError("email")}
         </div>
         <div>
-          <Label htmlFor="phone">Telepon / WhatsApp</Label>
+          <Label htmlFor="phone" className={labelCls}>
+            Telepon / WhatsApp
+          </Label>
           <Input
             id="phone"
             value={values.phone ?? ""}
             onChange={(e) => update("phone", e.target.value)}
             placeholder="08xx xxxx xxxx"
-            className="mt-1.5"
+            className={inputCls}
             aria-invalid={!!errors.phone}
           />
           {fieldError("phone")}
@@ -126,12 +174,14 @@ export function LeadForm({ className }: { className?: string }) {
       </div>
 
       <div>
-        <Label htmlFor="service">Layanan yang diminati</Label>
+        <Label htmlFor="service" className={labelCls}>
+          Layanan yang diminati
+        </Label>
         <select
           id="service"
           value={values.service ?? ""}
           onChange={(e) => update("service", e.target.value)}
-          className="mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-card px-3 py-1 text-sm text-ink-900 outline-none focus-visible:border-brand-orange focus-visible:ring-[3px] focus-visible:ring-brand-orange/30"
         >
           {SERVICE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -142,14 +192,16 @@ export function LeadForm({ className }: { className?: string }) {
       </div>
 
       <div>
-        <Label htmlFor="message">Kebutuhan Anda *</Label>
+        <Label htmlFor="message" className={labelCls}>
+          Kebutuhan Anda <span className="text-destructive">*</span>
+        </Label>
         <Textarea
           id="message"
           value={values.message}
           onChange={(e) => update("message", e.target.value)}
           placeholder="Ceritakan kebutuhan logistik atau transportasi Anda…"
           rows={4}
-          className="mt-1.5 resize-none"
+          className={cn(inputCls, "h-auto min-h-24 resize-none")}
           aria-invalid={!!errors.message}
         />
         {fieldError("message")}
@@ -159,7 +211,7 @@ export function LeadForm({ className }: { className?: string }) {
         type="submit"
         disabled={submitting}
         size="lg"
-        className="w-full bg-brand-orange text-white hover:bg-brand-orange-strong"
+        className="w-full bg-brand-orange text-white shadow-md hover:bg-brand-orange-strong"
       >
         {submitting ? (
           <>

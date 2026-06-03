@@ -121,9 +121,18 @@ export async function Footer() {
           <p>
             © {year} {settings.legalName}. Hak cipta dilindungi.
           </p>
-          <p>
-            {settings.legal.entity} · NIB {settings.legal.nib}
-          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/privasi" className="hover:text-brand-gold">
+              Privasi
+            </Link>
+            <Link href="/syarat-ketentuan" className="hover:text-brand-gold">
+              Syarat &amp; Ketentuan
+            </Link>
+            <span className="hidden sm:inline">·</span>
+            <p>
+              {settings.legal.entity} · NIB {settings.legal.nib}
+            </p>
+          </div>
         </div>
       </div>
     </footer>

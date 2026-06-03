@@ -15,6 +15,8 @@ import { SettingsRepository } from "@/server/repositories/settings.repository";
 import { COMPANY, VALUES } from "@/lib/constants";
 import type { CompanyJson, ValueItem } from "@/lib/validation/settings";
 
+type Testimonial = NonNullable<CompanyJson["testimonials"]>[number];
+
 /**
  * Final shape consumed by marketing pages. All keys are guaranteed to be
  * present (constants are the floor); admin edits override them.
@@ -40,6 +42,49 @@ const DEFAULT_MISI = [
   "Membangun tim profesional yang disiplin, bersertifikat, dan menjunjung keselamatan kerja.",
   "Tumbuh bersama pelanggan dengan kemitraan jangka panjang dan layanan yang konsisten.",
 ];
+
+const DEFAULT_TESTIMONIALS: Testimonial[] = [
+  {
+    quote:
+      "Kerjasama dengan BMI sangat membantu rantai distribusi kami — pengiriman selalu tepat waktu dan komunikasinya transparan.",
+    name: "Budi Hartono",
+    role: "Supply Chain Manager",
+    company: "PT Nusantara Retail",
+    avatarMediaId: "",
+  },
+  {
+    quote:
+      "Tim BMI profesional dan responsif. Kami mempercayakan distribusi nasional kami dan tidak pernah kecewa.",
+    name: "Sarah Wijaya",
+    role: "Direktur Operasional",
+    company: "PT Sentosa Manufaktur",
+    avatarMediaId: "",
+  },
+];
+
+const DEFAULT_PRIVACY_POLICY =
+  '<p>Kebijakan privasi ini menjelaskan bagaimana PT. Bintang Mulia Investama (selanjutnya "kami") mengumpulkan, menggunakan, dan melindungi informasi Anda saat menggunakan situs web ini.</p>' +
+  "<h2>Informasi yang kami kumpulkan</h2>" +
+  "<p>Kami mengumpulkan informasi yang Anda berikan secara sukarela melalui formulir kontak, termasuk nama, email, nomor telepon, dan pesan permintaan layanan.</p>" +
+  "<h2>Penggunaan informasi</h2>" +
+  "<p>Informasi yang kami kumpulkan digunakan untuk merespons permintaan Anda, memberikan layanan yang diminta, dan meningkatkan kualitas layanan kami.</p>" +
+  "<h2>Perlindungan data</h2>" +
+  "<p>Kami menerapkan langkah-langkah keamanan teknis dan organisasi untuk melindungi data Anda dari akses tidak sah.</p>" +
+  "<h2>Kontak</h2>" +
+  "<p>Untuk pertanyaan terkait kebijakan privasi, hubungi kami melalui kanal kontak resmi.</p>" +
+  "<p><em>Versi awal — akan dilengkapi oleh tim legal.</em></p>";
+
+const DEFAULT_TERMS =
+  "<p>Syarat dan ketentuan ini mengatur penggunaan situs web PT. Bintang Mulia Investama.</p>" +
+  "<h2>Penggunaan situs</h2>" +
+  "<p>Dengan mengakses situs ini, Anda menyetujui untuk menggunakannya sesuai dengan ketentuan yang berlaku.</p>" +
+  "<h2>Konten</h2>" +
+  "<p>Seluruh konten di situs ini adalah milik PT. Bintang Mulia Investama dan dilindungi oleh hak cipta yang berlaku.</p>" +
+  "<h2>Layanan</h2>" +
+  "<p>Permintaan layanan yang dikirim melalui situs ini akan ditindaklanjuti oleh tim kami sesuai dengan kapasitas operasional.</p>" +
+  "<h2>Perubahan</h2>" +
+  "<p>Kami berhak mengubah syarat dan ketentuan ini sewaktu-waktu. Perubahan akan diumumkan melalui situs ini.</p>" +
+  "<p><em>Versi awal — akan dilengkapi oleh tim legal.</em></p>";
 
 /** Maps the existing VALUES constant to the new ValueItem shape. */
 function valuesAsItems(): ValueItem[] {
@@ -81,6 +126,9 @@ function withFallbacks(): SiteSettingsResolved {
       youtube: "",
       tiktok: "",
     },
+    testimonials: DEFAULT_TESTIMONIALS,
+    privacyPolicy: DEFAULT_PRIVACY_POLICY,
+    termsAndConditions: DEFAULT_TERMS,
     values: valuesAsItems(),
   };
 }
@@ -101,6 +149,19 @@ export async function getSiteSettings(): Promise<SiteSettingsResolved> {
   const values =
     Array.isArray(valuesRaw) && valuesRaw.length >= 1 ? valuesRaw : fallback.values;
 
+  const testimonials =
+    Array.isArray(company.testimonials) && company.testimonials.length > 0
+      ? company.testimonials
+      : fallback.testimonials;
+  const privacyPolicy =
+    company.privacyPolicy && company.privacyPolicy.trim() !== ""
+      ? company.privacyPolicy
+      : fallback.privacyPolicy;
+  const termsAndConditions =
+    company.termsAndConditions && company.termsAndConditions.trim() !== ""
+      ? company.termsAndConditions
+      : fallback.termsAndConditions;
+
   return {
     ...fallback,
     ...company,
@@ -109,6 +170,9 @@ export async function getSiteSettings(): Promise<SiteSettingsResolved> {
     story: company.story && company.story.paragraphs?.length ? company.story : fallback.story,
     misi: company.misi && company.misi.length ? company.misi : fallback.misi,
     visi: company.visi && company.visi.trim() !== "" ? company.visi : fallback.visi,
+    testimonials,
+    privacyPolicy,
+    termsAndConditions,
     values,
   };
 }

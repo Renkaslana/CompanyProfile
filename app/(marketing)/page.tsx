@@ -7,6 +7,7 @@ import { CoverageMap } from "@/components/sections/coverage-map";
 import { ClientsPartners } from "@/components/sections/clients-partners";
 import { Certifications } from "@/components/sections/certifications";
 import { NewsPreview } from "@/components/sections/news-preview";
+import { Testimonials } from "@/components/sections/testimonials";
 import { CtaQuote } from "@/components/sections/cta-quote";
 import {
   getAchievements,
@@ -59,6 +60,7 @@ export default async function HomePage() {
       <FleetShowcase fleet={fleet} achievements={achievements} />
       <CoverageMap regions={coverage} />
       <ClientsPartners clients={clients} />
+      <Testimonials items={settings.testimonials ?? []} />
       <Certifications items={certifications} />
       <NewsPreview posts={latestNews} />
       <CtaQuote settings={settings} />

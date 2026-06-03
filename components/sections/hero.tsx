@@ -61,7 +61,7 @@ export function Hero({ stats }: { stats: Stat[] }) {
                 render={<Link href="/layanan" />}
                 size="lg"
                 variant="outline"
-                className="border-white/25 bg-white/5 text-white backdrop-blur-sm hover:bg-white/15 hover:text-white"
+                className="border-transparent bg-white/95 text-ink-900 shadow-md backdrop-blur-sm hover:bg-white hover:text-ink-900"
               >
                 <FileText className="size-4" />
                 Lihat Layanan

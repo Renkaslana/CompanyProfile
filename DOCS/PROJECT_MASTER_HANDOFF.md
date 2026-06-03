@@ -5,7 +5,7 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M9.5 (Settings consumer migration — Kontak / Footer / CtaQuote / Karir / metadata / JSON-LD + Google Maps embed URL field).
+Last update: end of Phase 4 M10 (Dashboard expansion + public UX polish + testimonials + legal pages + Bantuan shell + corporate silhouette avatar).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -44,7 +44,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9 done. M3 skipped (approved). Remaining: M10–M11 (dashboard + verification). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10 done. M3 skipped (approved). Remaining: M11 (verification + docs roll-up). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |
@@ -355,8 +355,8 @@ AND respected by UI. Audit Log is readable. Build clean.
 | 4 | M8 Team + Clients CMS | ✅ Complete (two CRUDs sharing the M7 pattern — list/create/edit/reorder/delete, optional MediaPicker for photo/logo, useActionState + Indonesian Zod messages, audit + revalidate `/tentang` and `/`, force-dynamic on `/tentang`) |
 | 4 | M9 Stats + Settings CMS | ✅ Complete (4-row Stat editor with MANUAL/DERIVED toggle, full Settings form for identitas/cerita/visi/misi/values/alamat/kontak/jam/legal/sosial, public Team photo + Client logo render, Team bio field + migration, hybrid `getSiteSettings()` overlay, public `/tentang` reads CMS values + new Visi/Misi block) |
 | 4 | M9.5 Settings consumer migration | ✅ Complete (`/kontak`, Footer, CtaQuote on `/`, `/karir`, root layout metadata + Organization JSON-LD all read from `getSiteSettings()`; added Google Maps embed URL field — `/kontak` renders real iframe when set, falls back to placeholder + search link when empty; force-dynamic on `/`, `/kontak`, `/karir`; verified 11/11 consumer assertions via marker-string harness against the running dev server) |
-| 4 | M10 Dashboard expansion | ⏳ Pending — **next** |
-| 4 | M11 Verification + docs roll-up | ⏳ Pending |
+| 4 | M10 Dashboard expansion + UX polish band | ✅ Complete (admin dashboard with content metrics + activity feed + needs-attention; public site polish: hero CTA fix, floating WhatsApp button, corporate silhouette avatar, lead form readability + inline success, About page enhanced with years-active + Coverage Map + trust strip + office strip, Testimonials section between Clients & Certifications, Privacy + Terms + Bantuan shell pages, cookies banner, Privacy/Terms admin-editable via Settings) |
+| 4 | M11 Verification + docs roll-up | ⏳ Pending — **next** |
 | **5** | Fleet management | ⏳ Pending |
 | **6** | Support Center (FAQ + escalation, no AI) | ⏳ Pending |
 | **7** | Lead management (Turnstile, rate limit, activity timeline) | ⏳ Pending |

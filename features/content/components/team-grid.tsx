@@ -1,15 +1,7 @@
 import Image from "next/image";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
+import { CorporateAvatar } from "@/components/ui/corporate-avatar";
 import type { TeamMember } from "@/features/content/types";
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-}
 
 function isCloudinary(src: string) {
   return src.startsWith("https://res.cloudinary.com");
@@ -30,8 +22,8 @@ export function TeamGrid({ members }: { members: TeamMember[] }) {
         return (
           <StaggerItem key={m.id}>
             <div className="flex flex-col items-center text-center">
-              <div className="relative flex size-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-orange/15 to-brand-gold/15 font-display text-xl font-bold text-brand-orange-strong ring-1 ring-brand-orange/15">
-                {photoSrc ? (
+              {photoSrc ? (
+                <div className="relative size-20 overflow-hidden rounded-2xl ring-1 ring-brand-orange/15">
                   <Image
                     src={photoSrc}
                     alt={photoAlt}
@@ -40,10 +32,10 @@ export function TeamGrid({ members }: { members: TeamMember[] }) {
                     className="object-cover"
                     unoptimized={!isCloudinary(photoSrc) && !isLocal(photoSrc)}
                   />
-                ) : (
-                  initials(m.name)
-                )}
-              </div>
+                </div>
+              ) : (
+                <CorporateAvatar name={m.name} size={80} />
+              )}
               <h3 className="mt-3 text-sm font-semibold text-ink-900">{m.name}</h3>
               <p className="text-xs text-muted-foreground">{m.role}</p>
               {m.bio && (

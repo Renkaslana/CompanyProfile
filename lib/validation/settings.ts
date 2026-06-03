@@ -9,6 +9,7 @@
  * `VALUES` constants for backward-compat.
  */
 import { z } from "zod";
+import { mediaAssetId } from "./common";
 
 /* ─── Reusable field rules with Indonesian messages ────────────────── */
 
@@ -104,6 +105,43 @@ export const companyJsonSchema = z.object({
       (url) => url === "" || url.includes("google.com/maps/embed"),
       "URL harus dari Google Maps embed (mulai dengan https://www.google.com/maps/embed).",
     )
+    .optional()
+    .or(z.literal("")),
+
+  // ─ Phase 4 M10: testimonials + legal pages ─────────────────────────
+  /**
+   * Up to 6 client testimonials shown in a homepage band between the
+   * Clients/Partners section and Certifications.
+   */
+  testimonials: z
+    .array(
+      z.object({
+        quote: shortString(10, 500, "Kutipan"),
+        name: shortString(2, 80, "Nama"),
+        role: shortString(2, 100, "Jabatan"),
+        company: z.string().trim().max(100).optional().or(z.literal("")),
+        avatarMediaId: mediaAssetId.nullable().optional().or(z.literal("")),
+      }),
+    )
+    .max(6, "Maksimum 6 testimoni.")
+    .optional()
+    .default([]),
+
+  /** Privacy policy body (sanitized HTML). Optional — `/privasi` shows a
+   *  placeholder if empty. */
+  privacyPolicy: z
+    .string()
+    .trim()
+    .max(50_000, "Kebijakan privasi terlalu panjang.")
+    .optional()
+    .or(z.literal("")),
+
+  /** Terms & conditions body (sanitized HTML). Optional — `/syarat-ketentuan`
+   *  shows a placeholder if empty. */
+  termsAndConditions: z
+    .string()
+    .trim()
+    .max(50_000, "Syarat & ketentuan terlalu panjang.")
     .optional()
     .or(z.literal("")),
 
