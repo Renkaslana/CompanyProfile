@@ -1,9 +1,11 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { LeadForm } from "@/features/leads/components/lead-form";
-import { COMPANY } from "@/lib/constants";
+import type { SiteSettingsResolved } from "@/lib/data/settings";
 
-export function CtaQuote() {
+type Props = { settings: SiteSettingsResolved };
+
+export function CtaQuote({ settings }: Props) {
   return (
     <section
       id="kontak"
@@ -38,10 +40,10 @@ export function CtaQuote() {
                 <div>
                   <p className="text-sm text-white/55">Telepon</p>
                   <a
-                    href={`tel:${COMPANY.phone.replace(/\s/g, "")}`}
+                    href={`tel:${settings.phone.replace(/\s/g, "")}`}
                     className="text-white hover:text-brand-gold"
                   >
-                    {COMPANY.phone}
+                    {settings.phone}
                   </a>
                 </div>
               </li>
@@ -52,10 +54,10 @@ export function CtaQuote() {
                 <div>
                   <p className="text-sm text-white/55">Email</p>
                   <a
-                    href={`mailto:${COMPANY.email}`}
+                    href={`mailto:${settings.email}`}
                     className="break-all text-white hover:text-brand-gold"
                   >
-                    {COMPANY.email}
+                    {settings.email}
                   </a>
                 </div>
               </li>
@@ -66,7 +68,7 @@ export function CtaQuote() {
                 <div>
                   <p className="text-sm text-white/55">Alamat</p>
                   <p className="text-white">
-                    {COMPANY.address}, {COMPANY.city}
+                    {settings.address}, {settings.city}
                   </p>
                 </div>
               </li>

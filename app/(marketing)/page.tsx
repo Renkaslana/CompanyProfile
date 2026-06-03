@@ -17,8 +17,13 @@ import {
   getGallery,
   getLatestNews,
   getServices,
+  getSiteSettings,
   getStats,
 } from "@/lib/data";
+
+// Phase 4 M9.5: marketing pages stay fresh so admin Settings edits surface
+// immediately on next visit (also matches the M5/M6/M7 force-dynamic flip).
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [
@@ -31,6 +36,7 @@ export default async function HomePage() {
     clients,
     certifications,
     latestNews,
+    settings,
   ] = await Promise.all([
     getStats(),
     getServices(),
@@ -41,6 +47,7 @@ export default async function HomePage() {
     getClients(),
     getCertifications(),
     getLatestNews(3),
+    getSiteSettings(),
   ]);
 
   return (
@@ -54,7 +61,7 @@ export default async function HomePage() {
       <ClientsPartners clients={clients} />
       <Certifications items={certifications} />
       <NewsPreview posts={latestNews} />
-      <CtaQuote />
+      <CtaQuote settings={settings} />
     </>
   );
 }

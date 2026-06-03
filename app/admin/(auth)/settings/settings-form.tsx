@@ -78,6 +78,7 @@ export function SettingsForm({ initialCompany, initialValues, action }: Props) {
     whatsapp: useId(),
     email: useId(),
     operationalHours: useId(),
+    mapEmbedUrl: useId(),
     legalEntity: useId(),
     nib: useId(),
     npwp: useId(),
@@ -295,6 +296,21 @@ export function SettingsForm({ initialCompany, initialValues, action }: Props) {
             <Input id={ids.operationalHours} value={company.operationalHours} onChange={(e) => setField("operationalHours", e.target.value)} maxLength={200} />
           </FormField>
         </div>
+        <FormField
+          label="Google Maps embed URL (opsional)"
+          htmlFor={ids.mapEmbedUrl}
+          hint='Tempel URL dari Google Maps → Share → "Embed a map" → salin nilai src dari iframe. Kosongkan untuk pakai placeholder + link Google Maps Search.'
+          error={fieldErr(fe, "company.mapEmbedUrl")}
+        >
+          <Input
+            id={ids.mapEmbedUrl}
+            type="url"
+            value={company.mapEmbedUrl ?? ""}
+            onChange={(e) => setField("mapEmbedUrl", e.target.value)}
+            placeholder="https://www.google.com/maps/embed?pb=…"
+            maxLength={2000}
+          />
+        </FormField>
       </FormSection>
 
       {/* ── Legal ──────────────────────────────────────────────── */}

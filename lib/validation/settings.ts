@@ -88,6 +88,25 @@ export const companyJsonSchema = z.object({
   // Business hours
   operationalHours: shortString(2, 200, "Jam operasional"),
 
+  /**
+   * Google Maps embed URL (Phase 4 M9.5). Optional. Paste from Google Maps →
+   * Share → "Embed a map" → copy the URL from the iframe `src` attribute.
+   * Expected host: `https://www.google.com/maps/embed?...`.
+   * When set, `/kontak` renders an embedded iframe; when empty, the page
+   * shows the styled placeholder + Google Maps search link as before.
+   */
+  mapEmbedUrl: z
+    .string()
+    .trim()
+    .url("URL Google Maps tidak valid.")
+    .max(2000)
+    .refine(
+      (url) => url === "" || url.includes("google.com/maps/embed"),
+      "URL harus dari Google Maps embed (mulai dengan https://www.google.com/maps/embed).",
+    )
+    .optional()
+    .or(z.literal("")),
+
   // Legal
   legal: z.object({
     entity: shortString(2, 100, "Bentuk badan"),

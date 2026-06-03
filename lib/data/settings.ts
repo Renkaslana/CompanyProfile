@@ -68,6 +68,7 @@ function withFallbacks(): SiteSettingsResolved {
     whatsapp: COMPANY.whatsapp,
     email: COMPANY.email,
     operationalHours: COMPANY.operationalHours,
+    mapEmbedUrl: "",
     legal: {
       entity: COMPANY.legal.entity,
       nib: COMPANY.legal.nib,

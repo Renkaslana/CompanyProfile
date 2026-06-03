@@ -3,24 +3,49 @@ import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { LeadForm } from "@/features/leads/components/lead-form";
 import { Reveal } from "@/components/motion/reveal";
+import { getSiteSettings } from "@/lib/data";
 import { COMPANY } from "@/lib/constants";
 
+// Phase 4 M9: marketing pages stay fresh so admin Settings edits surface
+// immediately on next visit.
+export const dynamic = "force-dynamic";
+
+// Static metadata is generated at build time so it still falls back to the
+// constants (admin can update title/description per-route in a later phase
+// via `generateMetadata`).
 export const metadata: Metadata = {
   title: "Kontak",
   description: `Hubungi ${COMPANY.legalName} untuk permintaan penawaran layanan logistik, transportasi, rental, dan perdagangan umum.`,
 };
 
-const mapsQuery = encodeURIComponent(
-  `${COMPANY.address}, ${COMPANY.city}, ${COMPANY.province} ${COMPANY.postalCode}`,
-);
-const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
-const waNumber = COMPANY.whatsapp.replace(/[^\d]/g, "");
+export default async function KontakPage() {
+  const settings = await getSiteSettings();
 
-export default function KontakPage() {
+  const mapsQuery = encodeURIComponent(
+    `${settings.address}, ${settings.city}, ${settings.province} ${settings.postalCode}`,
+  );
+  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+  const waNumber = settings.whatsapp.replace(/[^\d]/g, "");
+
   const contacts = [
-    { icon: Phone, label: "Telepon", value: COMPANY.phone, href: `tel:${COMPANY.phone.replace(/\s/g, "")}` },
-    { icon: MessageCircle, label: "WhatsApp", value: COMPANY.whatsapp, href: `https://wa.me/${waNumber}` },
-    { icon: Mail, label: "Email", value: COMPANY.email, href: `mailto:${COMPANY.email}` },
+    {
+      icon: Phone,
+      label: "Telepon",
+      value: settings.phone,
+      href: `tel:${settings.phone.replace(/\s/g, "")}`,
+    },
+    {
+      icon: MessageCircle,
+      label: "WhatsApp",
+      value: settings.whatsapp,
+      href: `https://wa.me/${waNumber}`,
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      value: settings.email,
+      href: `mailto:${settings.email}`,
+    },
   ];
 
   return (
@@ -40,7 +65,7 @@ export default function KontakPage() {
               <h2 className="font-display text-2xl font-bold text-ink-900">
                 Informasi Kontak
               </h2>
-              <p className="mt-2 text-muted-foreground">{COMPANY.operationalHours}</p>
+              <p className="mt-2 text-muted-foreground">{settings.operationalHours}</p>
 
               <div className="mt-8 space-y-4">
                 {contacts.map((c) => (
@@ -64,29 +89,42 @@ export default function KontakPage() {
                 ))}
               </div>
 
-              {/* Address + map placeholder */}
+              {/* Address + map */}
               <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative block aspect-16/9 bg-[radial-gradient(circle,rgba(57,65,79,0.18)_1px,transparent_1px)] [background-size:16px_16px]"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-steel/5 to-brand-orange/5" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="inline-flex size-12 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg transition-transform group-hover:scale-110">
-                      <MapPin className="size-6" />
-                    </span>
-                    <span className="mt-3 text-sm font-medium text-ink-900">
-                      Lihat lokasi di Google Maps
-                    </span>
-                  </div>
-                </a>
+                {settings.mapEmbedUrl ? (
+                  // Real embedded Google Map when admin has set the embed URL
+                  <iframe
+                    src={settings.mapEmbedUrl}
+                    title="Peta lokasi kantor"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="aspect-16/9 w-full border-0"
+                    allowFullScreen
+                  />
+                ) : (
+                  // Placeholder + external link to Google Maps search
+                  <a
+                    href={mapsSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative block aspect-16/9 bg-[radial-gradient(circle,rgba(57,65,79,0.18)_1px,transparent_1px)] [background-size:16px_16px]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-steel/5 to-brand-orange/5" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                      <span className="inline-flex size-12 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg transition-transform group-hover:scale-110">
+                        <MapPin className="size-6" />
+                      </span>
+                      <span className="mt-3 text-sm font-medium text-ink-900">
+                        Lihat lokasi di Google Maps
+                      </span>
+                    </div>
+                  </a>
+                )}
                 <div className="flex items-start gap-3 p-5">
                   <MapPin className="mt-0.5 size-5 shrink-0 text-brand-orange" />
                   <p className="text-sm text-muted-foreground">
-                    {COMPANY.address}, {COMPANY.city}, {COMPANY.province}{" "}
-                    {COMPANY.postalCode}, {COMPANY.country}
+                    {settings.address}, {settings.city}, {settings.province}{" "}
+                    {settings.postalCode}, {settings.country}
                   </p>
                 </div>
               </div>

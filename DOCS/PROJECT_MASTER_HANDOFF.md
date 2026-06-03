@@ -5,7 +5,7 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M9 (Stats + Settings CMS + public Team/Client render + Team bio + migration).
+Last update: end of Phase 4 M9.5 (Settings consumer migration — Kontak / Footer / CtaQuote / Karir / metadata / JSON-LD + Google Maps embed URL field).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -354,6 +354,7 @@ AND respected by UI. Audit Log is readable. Build clean.
 | 4 | M7 Gallery CMS | ✅ Complete (list / create / edit / reorder / delete with required MediaPicker + free-form category with datalist suggestions + force-dynamic on `/galeri`) |
 | 4 | M8 Team + Clients CMS | ✅ Complete (two CRUDs sharing the M7 pattern — list/create/edit/reorder/delete, optional MediaPicker for photo/logo, useActionState + Indonesian Zod messages, audit + revalidate `/tentang` and `/`, force-dynamic on `/tentang`) |
 | 4 | M9 Stats + Settings CMS | ✅ Complete (4-row Stat editor with MANUAL/DERIVED toggle, full Settings form for identitas/cerita/visi/misi/values/alamat/kontak/jam/legal/sosial, public Team photo + Client logo render, Team bio field + migration, hybrid `getSiteSettings()` overlay, public `/tentang` reads CMS values + new Visi/Misi block) |
+| 4 | M9.5 Settings consumer migration | ✅ Complete (`/kontak`, Footer, CtaQuote on `/`, `/karir`, root layout metadata + Organization JSON-LD all read from `getSiteSettings()`; added Google Maps embed URL field — `/kontak` renders real iframe when set, falls back to placeholder + search link when empty; force-dynamic on `/`, `/kontak`, `/karir`; verified 11/11 consumer assertions via marker-string harness against the running dev server) |
 | 4 | M10 Dashboard expansion | ⏳ Pending — **next** |
 | 4 | M11 Verification + docs roll-up | ⏳ Pending |
 | **5** | Fleet management | ⏳ Pending |

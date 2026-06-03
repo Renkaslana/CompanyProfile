@@ -1,12 +1,20 @@
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
-import { COMPANY, NAV_ITEMS } from "@/lib/constants";
-import { getServices } from "@/lib/data";
+import { NAV_ITEMS } from "@/lib/constants";
+import { getServices, getSiteSettings } from "@/lib/data";
 
 export async function Footer() {
-  const services = await getServices();
+  const [services, settings] = await Promise.all([getServices(), getSiteSettings()]);
   const year = new Date().getFullYear();
+
+  const socials: Array<{ href: string; label: string; short: string }> = [
+    { href: settings.socials.instagram ?? "", label: "Instagram", short: "IG" },
+    { href: settings.socials.linkedin ?? "", label: "LinkedIn", short: "in" },
+    { href: settings.socials.facebook ?? "", label: "Facebook", short: "f" },
+    { href: settings.socials.youtube ?? "", label: "YouTube", short: "YT" },
+    { href: settings.socials.tiktok ?? "", label: "TikTok", short: "TT" },
+  ].filter((s) => s.href && s.href.trim() !== "");
 
   return (
     <footer className="section-ink relative mt-auto overflow-hidden">
@@ -17,26 +25,24 @@ export async function Footer() {
           <div>
             <Logo variant="onDark" />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
-              {COMPANY.tagline}
+              {settings.tagline}
             </p>
-            <div className="mt-6 flex items-center gap-3">
-              {[
-                { href: COMPANY.socials.instagram, label: "Instagram", short: "IG" },
-                { href: COMPANY.socials.linkedin, label: "LinkedIn", short: "in" },
-                { href: COMPANY.socials.facebook, label: "Facebook", short: "f" },
-              ].map(({ href, label, short }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="inline-flex size-9 items-center justify-center rounded-lg bg-white/5 text-sm font-semibold text-white/70 ring-1 ring-white/10 transition-colors hover:bg-brand-orange hover:text-white"
-                >
-                  {short}
-                </a>
-              ))}
-            </div>
+            {socials.length > 0 && (
+              <div className="mt-6 flex items-center gap-3">
+                {socials.map(({ href, label, short }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="inline-flex size-9 items-center justify-center rounded-lg bg-white/5 text-sm font-semibold text-white/70 ring-1 ring-white/10 transition-colors hover:bg-brand-orange hover:text-white"
+                  >
+                    {short}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -86,24 +92,24 @@ export async function Footer() {
               <li className="flex gap-3">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-brand-orange" />
                 <span>
-                  {COMPANY.address}, {COMPANY.city}, {COMPANY.province} {COMPANY.postalCode}
+                  {settings.address}, {settings.city}, {settings.province} {settings.postalCode}
                 </span>
               </li>
               <li className="flex gap-3">
                 <Phone className="mt-0.5 size-4 shrink-0 text-brand-orange" />
-                <a href={`tel:${COMPANY.phone.replace(/\s/g, "")}`} className="hover:text-brand-gold">
-                  {COMPANY.phone}
+                <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="hover:text-brand-gold">
+                  {settings.phone}
                 </a>
               </li>
               <li className="flex gap-3">
                 <Mail className="mt-0.5 size-4 shrink-0 text-brand-orange" />
-                <a href={`mailto:${COMPANY.email}`} className="break-all hover:text-brand-gold">
-                  {COMPANY.email}
+                <a href={`mailto:${settings.email}`} className="break-all hover:text-brand-gold">
+                  {settings.email}
                 </a>
               </li>
               <li className="flex gap-3">
                 <Clock className="mt-0.5 size-4 shrink-0 text-brand-orange" />
-                <span>{COMPANY.operationalHours}</span>
+                <span>{settings.operationalHours}</span>
               </li>
             </ul>
           </div>
@@ -113,10 +119,10 @@ export async function Footer() {
 
         <div className="mt-6 flex flex-col items-center justify-between gap-3 text-xs text-white/40 sm:flex-row">
           <p>
-            © {year} {COMPANY.legalName}. Hak cipta dilindungi.
+            © {year} {settings.legalName}. Hak cipta dilindungi.
           </p>
           <p>
-            {COMPANY.legal.entity} · NIB {COMPANY.legal.nib}
+            {settings.legal.entity} · NIB {settings.legal.nib}
           </p>
         </div>
       </div>

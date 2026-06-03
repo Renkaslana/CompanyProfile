@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { COMPANY } from "@/lib/constants";
-import { getJobs } from "@/lib/data";
+import { getJobs, getSiteSettings } from "@/lib/data";
+
+// Phase 4 M9.5
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Karir",
@@ -22,7 +25,7 @@ const CULTURE = [
 ];
 
 export default async function KarirPage() {
-  const jobs = await getJobs();
+  const [jobs, settings] = await Promise.all([getJobs(), getSiteSettings()]);
 
   return (
     <>
@@ -101,7 +104,7 @@ export default async function KarirPage() {
                   <Button
                     render={
                       <a
-                        href={`mailto:${COMPANY.email}?subject=Lamaran: ${encodeURIComponent(job.title)}`}
+                        href={`mailto:${settings.email}?subject=Lamaran: ${encodeURIComponent(job.title)}`}
                       />
                     }
                     className="shrink-0 bg-brand-orange text-white hover:bg-brand-orange-strong"
@@ -115,10 +118,10 @@ export default async function KarirPage() {
           <p className="mt-8 text-center text-sm text-muted-foreground">
             Tidak menemukan posisi yang cocok? Kirim CV Anda ke{" "}
             <a
-              href={`mailto:${COMPANY.email}`}
+              href={`mailto:${settings.email}`}
               className="font-medium text-brand-orange-strong hover:underline"
             >
-              {COMPANY.email}
+              {settings.email}
             </a>
           </p>
         </div>
