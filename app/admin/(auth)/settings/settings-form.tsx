@@ -62,20 +62,40 @@ function allowedTagsLabel(): string {
     : "p, h2, h3, strong, em, ul, ol, li, a";
 }
 
-/** Section anchors used by the sticky nav. */
-const SECTIONS = [
-  { id: "identitas", label: "Identitas" },
-  { id: "cerita", label: "Cerita" },
-  { id: "visi-misi", label: "Visi & Misi" },
-  { id: "nilai", label: "Nilai Inti" },
-  { id: "alamat", label: "Alamat" },
-  { id: "kontak", label: "Kontak" },
-  { id: "legal", label: "Legal" },
-  { id: "testimoni", label: "Testimoni" },
-  { id: "privasi", label: "Privasi" },
-  { id: "syarat", label: "Syarat & Ketentuan" },
-  { id: "sosial", label: "Sosial Media" },
+/**
+ * Tab grouping (UX 5). Each tab shows only its own sections; the others stay
+ * mounted (display:none) so React state + scroll position survive switches.
+ * Single save button submits the whole form regardless of active tab.
+ */
+const TABS = [
+  {
+    id: "identitas",
+    label: "Identitas & Cerita",
+    sections: ["identitas", "cerita", "visi-misi", "nilai"],
+  },
+  {
+    id: "kontak",
+    label: "Kontak & Lokasi",
+    sections: ["alamat", "kontak"],
+  },
+  {
+    id: "testimoni",
+    label: "Testimoni",
+    sections: ["testimoni"],
+  },
+  {
+    id: "legal",
+    label: "Legal & Halaman Kebijakan",
+    sections: ["legal", "privasi", "syarat"],
+  },
+  {
+    id: "sosial",
+    label: "Sosial Media",
+    sections: ["sosial"],
+  },
 ] as const;
+
+type TabId = (typeof TABS)[number]["id"];
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -104,6 +124,10 @@ export function SettingsForm({
   const [state, formAction] = useActionState<SettingsFormState | null, FormData>(action, null);
   const [company, setCompany] = useState<CompanyJson>(initialCompany);
   const [values, setValues] = useState<ValueItem[]>(initialValues);
+  const [activeTab, setActiveTab] = useState<TabId>("identitas");
+  const visibleSections = new Set(
+    TABS.find((t) => t.id === activeTab)?.sections ?? [],
+  );
 
   const fe = state?.fieldErrors;
   const companyJson = useMemo(() => JSON.stringify(company), [company]);
@@ -236,35 +260,36 @@ export function SettingsForm({
         />
       )}
 
-      <div className="lg:grid lg:grid-cols-[180px_1fr] lg:gap-8 lg:items-start">
-        {/* Sticky in-page section nav (lg+) */}
-        <nav
-          aria-label="Bagian pengaturan"
-          className="hidden lg:block lg:sticky lg:top-24 lg:self-start"
-        >
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Lompat ke
-          </p>
-          <ul className="grid gap-1">
-            {SECTIONS.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className={cn(
-                    "block rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors",
-                    "hover:bg-muted hover:text-ink-900",
-                  )}
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      {/* Tab bar (UX 5) — choose which category of settings to edit. Single save
+          applies to all tabs at once. */}
+      <div
+        role="tablist"
+        aria-label="Kategori pengaturan"
+        className="-mx-1 flex flex-wrap gap-1 overflow-x-auto rounded-2xl border border-border bg-card p-1 shadow-sm"
+      >
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={cn(
+              "shrink-0 rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:text-sm",
+              activeTab === t.id
+                ? "bg-brand-orange text-white shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-ink-900",
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
+      <div>
         <div className="space-y-6">
           {/* ── Identitas ────────────────────────────────────────────── */}
-          <div id="identitas" className="scroll-mt-24">
+          <div id="identitas" className={cn("scroll-mt-24", !visibleSections.has("identitas") && "hidden")}>
             <FormSection title="Identitas perusahaan">
               <FormField label="Nama legal" htmlFor={ids.legalName} required error={fieldErr(fe, "company.legalName")}>
                 <Input id={ids.legalName} value={company.legalName} onChange={(e) => setField("legalName", e.target.value)} maxLength={200} />
@@ -282,7 +307,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Cerita ─────────────────────────────────────────────── */}
-          <div id="cerita" className="scroll-mt-24">
+          <div id="cerita" className={cn("scroll-mt-24", !visibleSections.has("cerita") && "hidden")}>
             <FormSection title="Cerita perusahaan" description="Tampil di halaman /tentang.">
               <FormField label="Judul cerita" htmlFor={ids.storyHeadline} required error={fieldErr(fe, "company.story.headline")}>
                 <Input id={ids.storyHeadline} value={company.story.headline} onChange={(e) => setCompany((p) => ({ ...p, story: { ...p.story, headline: e.target.value } }))} maxLength={200} />
@@ -313,7 +338,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Visi & Misi ────────────────────────────────────────── */}
-          <div id="visi-misi" className="scroll-mt-24">
+          <div id="visi-misi" className={cn("scroll-mt-24", !visibleSections.has("visi-misi") && "hidden")}>
             <FormSection title="Visi & Misi">
               <FormField label="Visi" htmlFor="visi" hint="Satu kalimat ringkas (≤500 karakter)." required error={fieldErr(fe, "company.visi")}>
                 <textarea id="visi" value={company.visi} onChange={(e) => setField("visi", e.target.value)} rows={3} maxLength={500} className={textareaCls} />
@@ -342,7 +367,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Nilai Inti (Core Values) ───────────────────────────── */}
-          <div id="nilai" className="scroll-mt-24">
+          <div id="nilai" className={cn("scroll-mt-24", !visibleSections.has("nilai") && "hidden")}>
             <FormSection title="Nilai Inti" description="Kartu nilai di halaman beranda + /tentang.">
               <div className="grid gap-3">
                 {values.map((v, i) => (
@@ -373,7 +398,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Alamat ─────────────────────────────────────────────── */}
-          <div id="alamat" className="scroll-mt-24">
+          <div id="alamat" className={cn("scroll-mt-24", !visibleSections.has("alamat") && "hidden")}>
             <FormSection title="Alamat">
               <FormField label="Alamat" htmlFor={ids.address} required error={fieldErr(fe, "company.address")}>
                 <Input id={ids.address} value={company.address} onChange={(e) => setField("address", e.target.value)} maxLength={300} />
@@ -396,7 +421,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Kontak & Jam ───────────────────────────────────────── */}
-          <div id="kontak" className="scroll-mt-24">
+          <div id="kontak" className={cn("scroll-mt-24", !visibleSections.has("kontak") && "hidden")}>
             <FormSection title="Kontak & Jam operasional">
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField label="Telepon" htmlFor={ids.phone} required error={fieldErr(fe, "company.phone")}>
@@ -431,7 +456,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Legal ──────────────────────────────────────────────── */}
-          <div id="legal" className="scroll-mt-24">
+          <div id="legal" className={cn("scroll-mt-24", !visibleSections.has("legal") && "hidden")}>
             <FormSection title="Legal">
               <div className="grid gap-3 sm:grid-cols-3">
                 <FormField label="Bentuk badan" htmlFor={ids.legalEntity} required error={fieldErr(fe, "company.legal.entity")}>
@@ -448,7 +473,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Testimonials (M10.1) ───────────────────────────────── */}
-          <div id="testimoni" className="scroll-mt-24">
+          <div id="testimoni" className={cn("scroll-mt-24", !visibleSections.has("testimoni") && "hidden")}>
             <FormSection
               title="Testimoni klien"
               description="Tampil di halaman beranda antara bagian Klien dan Sertifikasi. Maksimum 6 testimoni."
@@ -570,7 +595,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Kebijakan Privasi (M10.1) ──────────────────────────── */}
-          <div id="privasi" className="scroll-mt-24">
+          <div id="privasi" className={cn("scroll-mt-24", !visibleSections.has("privasi") && "hidden")}>
             <FormSection
               title="Kebijakan Privasi"
               description="Konten halaman /privasi. HTML disanitasi otomatis. Kosongkan untuk pakai versi placeholder."
@@ -613,7 +638,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Syarat & Ketentuan (M10.1) ────────────────────────── */}
-          <div id="syarat" className="scroll-mt-24">
+          <div id="syarat" className={cn("scroll-mt-24", !visibleSections.has("syarat") && "hidden")}>
             <FormSection
               title="Syarat & Ketentuan"
               description="Konten halaman /syarat-ketentuan. HTML disanitasi otomatis. Kosongkan untuk pakai versi placeholder."
@@ -656,7 +681,7 @@ export function SettingsForm({
           </div>
 
           {/* ── Sosial Media ───────────────────────────────────────── */}
-          <div id="sosial" className="scroll-mt-24">
+          <div id="sosial" className={cn("scroll-mt-24", !visibleSections.has("sosial") && "hidden")}>
             <FormSection title="Sosial media" description="Opsional. Awali dengan https://. Kosongkan jika tidak dipakai.">
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField label="Instagram" htmlFor={ids.instagram} error={fieldErr(fe, "company.socials.instagram")}>

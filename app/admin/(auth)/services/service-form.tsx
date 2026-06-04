@@ -157,9 +157,9 @@ export function ServiceForm({ mode, initial, mediaAssets, action }: Props) {
         </FormField>
 
         <FormField
-          label="Slug"
+          label="URL Halaman (slug)"
           htmlFor={slugId}
-          hint="Huruf kecil, angka, dan tanda hubung. Otomatis dari judul; ubah jika perlu."
+          hint="Bagian akhir alamat halaman publik — contoh: /layanan/transportasi-logistik. Hanya huruf kecil, angka, dan tanda hubung. Otomatis dari judul; ubah jika perlu."
           required
           error={fe?.slug?.[0]}
         >

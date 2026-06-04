@@ -20,8 +20,14 @@ import {
   disableUserAction,
   reactivateUserAction,
 } from "./actions";
+import { ROLE_LABEL } from "@/lib/admin-i18n";
+import type { RoleName } from "@/server/auth/permissions";
 
 type Role = { id: string; name: string };
+
+function friendlyRoleName(name: string): string {
+  return ROLE_LABEL[name as RoleName] ?? name;
+}
 
 export function UserActionsRow({
   userId,
@@ -61,8 +67,8 @@ export function UserActionsRow({
             aria-label="Pilih peran baru"
           >
             {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
+              <option key={r.id} value={r.id} title={r.name}>
+                {friendlyRoleName(r.name)}
               </option>
             ))}
           </select>

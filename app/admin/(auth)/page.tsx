@@ -14,19 +14,27 @@ import {
   AlertTriangle,
   Boxes,
   CheckCircle2,
+  ClipboardCheck,
   Images,
   ImagePlus,
   Newspaper,
   Plus,
   ScrollText,
   Settings2,
+  UserCircle2,
   Users,
 } from "lucide-react";
 import { requireFreshSession } from "@/server/auth/guards";
 import { db } from "@/lib/db";
 import { UserRepository } from "@/server/repositories/user.repository";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
+import {
+  ACTION_LABEL,
+  ENTITY_LABEL,
+  ROLE_DESCRIPTION,
+  ROLE_LABEL,
+} from "@/lib/admin-i18n";
+import type { RoleName } from "@/server/auth/permissions";
 
 type SearchParams = Promise<{ error?: string }>;
 
@@ -62,6 +70,7 @@ export default async function DashboardPage({
     staleServiceDrafts,
     staleNewsDrafts,
     recentAudit,
+    myActivity,
   ] = await Promise.all([
     db.service.count({ where: { published: true } }),
     db.service.count({ where: { published: false } }),
@@ -77,7 +86,14 @@ export default async function DashboardPage({
     db.auditLog.findMany({
       take: 8,
       orderBy: { createdAt: "desc" },
-      select: { id: true, action: true, entity: true, entityId: true, actorId: true, createdAt: true },
+      select: { id: true, action: true, entity: true, entityId: true, actorId: true, createdAt: true, meta: true },
+    }),
+    // "Aktivitas Saya" — last 5 actions by the current user
+    db.auditLog.findMany({
+      where: { actorId: user.id },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      select: { id: true, action: true, entity: true, entityId: true, createdAt: true, meta: true },
     }),
   ]);
 
@@ -96,7 +112,7 @@ export default async function DashboardPage({
     { label: "Tambah layanan", href: "/admin/services/new", icon: Boxes, perm: "content:write" },
     { label: "Tambah item galeri", href: "/admin/gallery/new", icon: ImagePlus, perm: "content:write" },
     { label: "Buka pengaturan", href: "/admin/settings", icon: Settings2, perm: "content:read" },
-    { label: "Audit Log", href: "/admin/audit", icon: ScrollText, perm: "audit:read" },
+    { label: "Riwayat Aktivitas", href: "/admin/audit", icon: ScrollText, perm: "audit:read" },
   ].filter((l) => can(l.perm));
 
   const contentCards = [
@@ -108,20 +124,42 @@ export default async function DashboardPage({
   const utilityCards = [
     { label: "Media Library", value: mediaCount, icon: ImagePlus, href: "/admin/media", perm: "media:create" },
     { label: "Pengguna admin", value: userCount, icon: Users, href: "/admin/users", perm: "users:manage" },
-    { label: "Audit entries", value: auditCount, icon: ScrollText, href: "/admin/audit", perm: "audit:read" },
+    { label: "Riwayat aktivitas", value: auditCount, icon: ScrollText, href: "/admin/audit", perm: "audit:read" },
   ].filter((c) => can(c.perm));
 
   const hasAttention = staleServiceDrafts + staleNewsDrafts + newsArchived > 0;
+
+  // Publish queue — drafts across all content modules. Editors can scan one
+  // place to see "what's ready to push live."
+  const publishQueueTotal = servicesDraft + newsDraft;
+
+  // Friendly role display.
+  const roleLabel = ROLE_LABEL[user.role as RoleName] ?? user.role;
+  const roleDescription = ROLE_DESCRIPTION[user.role as RoleName] ?? "";
+
+  // Render a short Indonesian sentence for an audit row's action + entity.
+  function describeAudit(action: string, entity: string): string {
+    const a = ACTION_LABEL[action] ?? action;
+    const e = ENTITY_LABEL[entity] ?? entity;
+    return `${a} · ${e}`;
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <header>
         <p className="text-sm text-muted-foreground">Selamat datang kembali,</p>
         <h1 className="mt-1 font-display text-3xl font-bold text-ink-900">{user.name}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Peran Anda: <span className="font-semibold text-foreground">{user.role}</span>{" "}
-          · {user.permissions.length} permission aktif.
+        <p className="mt-2 inline-flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-orange/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-brand-orange-strong">
+            <UserCircle2 className="size-3.5" />
+            {roleLabel}
+          </span>
         </p>
+        {roleDescription && (
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            {roleDescription}
+          </p>
+        )}
       </header>
 
       {error && (
@@ -222,11 +260,116 @@ export default async function DashboardPage({
         </section>
       )}
 
+      {/* Publish queue + My activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Konten Menunggu Publikasi */}
+        <section>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Konten Menunggu Publikasi
+          </h2>
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            {publishQueueTotal === 0 ? (
+              <div className="flex items-start gap-3">
+                <span className="inline-flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                  <CheckCircle2 className="size-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-ink-900">Tidak ada draft.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Semua konten sudah dipublikasikan.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                <li className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange-strong">
+                      <Boxes className="size-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-ink-900">Layanan</p>
+                      <p className="text-xs text-muted-foreground">
+                        {servicesDraft} draft menunggu
+                      </p>
+                    </div>
+                  </div>
+                  {servicesDraft > 0 && (
+                    <Link
+                      href="/admin/services"
+                      className="text-xs font-medium text-brand-orange-strong hover:underline"
+                    >
+                      Tinjau →
+                    </Link>
+                  )}
+                </li>
+                <li className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange-strong">
+                      <Newspaper className="size-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-ink-900">Berita</p>
+                      <p className="text-xs text-muted-foreground">
+                        {newsDraft} draft menunggu
+                      </p>
+                    </div>
+                  </div>
+                  {newsDraft > 0 && (
+                    <Link
+                      href="/admin/news?status=DRAFT"
+                      className="text-xs font-medium text-brand-orange-strong hover:underline"
+                    >
+                      Tinjau →
+                    </Link>
+                  )}
+                </li>
+              </ul>
+            )}
+          </div>
+        </section>
+
+        {/* Aktivitas Saya — last 5 actions by current user */}
+        <section>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Aktivitas Saya Terakhir
+          </h2>
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            {myActivity.length === 0 ? (
+              <div className="flex items-start gap-3 px-5 py-4">
+                <span className="inline-flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <ClipboardCheck className="size-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-ink-900">Belum ada aktivitas.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Aktivitas akan muncul di sini saat Anda mengedit atau mempublikasi konten.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {myActivity.map((a) => (
+                  <li key={a.id} className="px-5 py-3">
+                    <p className="text-sm font-medium text-ink-900">
+                      {describeAudit(a.action, a.entity)}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                      {a.createdAt.toISOString().replace("T", " ").slice(0, 16)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent activity */}
+        {/* Recent activity (semua pengguna) */}
         <section className="lg:col-span-2">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Aktivitas Terbaru
+            Aktivitas Tim Terbaru
           </h2>
           <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             {recentAudit.length === 0 ? (
@@ -240,10 +383,9 @@ export default async function DashboardPage({
                   return (
                     <li key={a.id} className="flex items-start justify-between gap-3 px-5 py-3">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <StatusBadge status={a.action} />
-                          <span className="text-xs text-muted-foreground">{a.entity}</span>
-                        </div>
+                        <p className="text-sm font-medium text-ink-900">
+                          {describeAudit(a.action, a.entity)}
+                        </p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {actor ? (
                             <>
@@ -251,7 +393,7 @@ export default async function DashboardPage({
                               <span> · {actor.email}</span>
                             </>
                           ) : a.actorId === "anonymous" ? (
-                            <span className="italic">anonymous</span>
+                            <span className="italic">anonim</span>
                           ) : (
                             <span className="font-mono">{a.actorId.slice(0, 12)}…</span>
                           )}
@@ -271,7 +413,7 @@ export default async function DashboardPage({
                   href="/admin/audit"
                   className="inline-flex items-center gap-1 text-xs font-medium text-brand-orange-strong hover:underline"
                 >
-                  Lihat semua audit log →
+                  Lihat semua riwayat aktivitas →
                 </Link>
               </div>
             )}

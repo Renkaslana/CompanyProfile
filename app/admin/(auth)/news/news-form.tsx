@@ -157,9 +157,9 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
         </FormField>
 
         <FormField
-          label="Slug"
+          label="URL Halaman (slug)"
           htmlFor={slugId}
-          hint="Huruf kecil, angka, dan tanda hubung. Otomatis dari judul; ubah jika perlu."
+          hint="Bagian akhir alamat halaman publik — contoh: /berita/peluncuran-armada-baru. Hanya huruf kecil, angka, dan tanda hubung. Otomatis dari judul; ubah jika perlu."
           required
           error={fe?.slug?.[0]}
         >
@@ -212,9 +212,9 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
 
       <FormSection title="Konten">
         <FormField
-          label="Excerpt"
+          label="Ringkasan singkat"
           htmlFor={excerptId}
-          hint="2 – 500 karakter. Tampil di kartu berita + meta description."
+          hint="2 – 500 karakter. Tampil di kartu daftar berita + sebagai meta description halaman."
           required
           error={fe?.excerpt?.[0]}
         >

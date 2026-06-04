@@ -5,9 +5,10 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M10 follow-up (Settings form completion M10.1 +
-admin list search M10.2 + server-side pagination M10.3 + audit-log filter
-strip M10.4).
+Last update: end of CMS UX/Usability pass — mobile nav drawer, friendly
+terminology (Indonesian), dashboard role description + Aktivitas Saya +
+Konten Menunggu Publikasi widgets, EmptyState primitive, Settings UI tabs,
+list-action consolidation, audit log humanization.
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -46,7 +47,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10, M10.1–M10.4 follow-up done. M3 skipped (approved). Remaining: M11 (verification + docs roll-up). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10, M10.1–M10.4 + CMS UX usability pass (mobile nav, terminology, dashboard widgets, empty states, settings tabs, list action consolidation, audit humanization) done. M3 skipped. Remaining: M11 (verification + docs roll-up). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |

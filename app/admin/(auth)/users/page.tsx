@@ -3,11 +3,12 @@
  * M10.2/3: search + pagination via shared primitives.
  */
 import Link from "next/link";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { FormBanner } from "@/components/admin/admin-form";
 import { ListToolbar } from "@/components/admin/list-toolbar";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Pagination,
   paginationFromSearchParam,
@@ -15,6 +16,8 @@ import {
 import { requirePermission } from "@/server/auth/guards";
 import { UserService } from "@/server/services/user.service";
 import { UserActionsRow } from "./user-actions-row";
+import { ROLE_LABEL } from "@/lib/admin-i18n";
+import type { RoleName } from "@/server/auth/permissions";
 
 const PAGE_SIZE = 20;
 
@@ -123,6 +126,21 @@ export default async function UsersPage({
 
       <ListToolbar placeholder="Cari nama / email / peran…" />
 
+      {users.length === 0 && !query ? (
+        <EmptyState
+          icon={Users}
+          title="Belum ada pengguna admin"
+          description="Setelah Anda mengundang admin, mereka akan menerima link satu-kali untuk mengatur kata sandi."
+          action={{ label: "Undang admin baru", href: "/admin/users/new" }}
+        />
+      ) : users.length === 0 ? (
+        <EmptyState
+          mode="no-match"
+          icon={Users}
+          title={`Tidak ada pengguna cocok dengan "${query}".`}
+          reset={{ label: "Bersihkan pencarian", href: "/admin/users" }}
+        />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -135,16 +153,7 @@ export default async function UsersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {query
-                    ? `Tidak ada pengguna yang cocok dengan "${query}".`
-                    : "Belum ada pengguna."}
-                </td>
-              </tr>
-            ) : (
-              users.map((u) => {
+            {users.map((u) => {
                 const isSelf = u.id === session.id;
                 const isDisabled = u.disabledAt !== null;
                 const status = isDisabled
@@ -169,8 +178,8 @@ export default async function UsersPage({
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full bg-brand-orange/12 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-brand-orange-strong">
-                        {u.role.name}
+                      <span className="rounded-full bg-brand-orange/12 px-2 py-0.5 text-xs font-semibold text-brand-orange-strong" title={u.role.name}>
+                        {ROLE_LABEL[u.role.name as RoleName] ?? u.role.name}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -193,11 +202,11 @@ export default async function UsersPage({
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={currentPage}

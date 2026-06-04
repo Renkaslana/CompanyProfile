@@ -4,10 +4,11 @@
  */
 import Link from "next/link";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, ExternalLink, Plus } from "lucide-react";
+import { AlertTriangle, Building2, CheckCircle2, ExternalLink, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { Button } from "@/components/ui/button";
 import { ListToolbar } from "@/components/admin/list-toolbar";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Pagination,
   paginationFromSearchParam,
@@ -99,6 +100,21 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
 
       <ListToolbar placeholder="Cari nama / sektor / URL…" />
 
+      {items.length === 0 && !query ? (
+        <EmptyState
+          icon={Building2}
+          title="Belum ada klien"
+          description="Logo klien & mitra akan tampil di halaman beranda. Logo opsional — jika kosong, wordmark monokrom otomatis dipakai."
+          action={canWrite ? { label: "Tambah klien pertama", href: "/admin/clients/new" } : undefined}
+        />
+      ) : items.length === 0 ? (
+        <EmptyState
+          mode="no-match"
+          icon={Building2}
+          title={`Tidak ada klien cocok dengan "${query}".`}
+          reset={{ label: "Bersihkan pencarian", href: "/admin/clients" }}
+        />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -112,21 +128,7 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {query
-                    ? `Tidak ada klien yang cocok dengan "${query}".`
-                    : "Belum ada klien."}{" "}
-                  {canWrite && !query && (
-                    <Link href="/admin/clients/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
-                      Tambahkan klien pertama
-                    </Link>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              items.map((c, i) => {
+            {items.map((c, i) => {
                 const logo = c.logoId ? logoById.get(c.logoId) : undefined;
                 const url = logo?.url ?? "";
                 const isCloudinary = url.startsWith("https://res.cloudinary.com");
@@ -190,11 +192,11 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={currentPage}

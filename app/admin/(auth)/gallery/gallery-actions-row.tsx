@@ -72,12 +72,13 @@ export function GalleryActionsRow({ id, title, isFirst, isLast, canWrite }: Prop
         trigger={
           <Button
             type="button"
-            size="sm"
+            size="icon-sm"
             variant="outline"
+            aria-label={`Hapus ${title}`}
+            title="Hapus"
             className="text-destructive hover:bg-destructive/5"
           >
             <Trash2 className="size-3.5" />
-            Hapus
           </Button>
         }
         title="Hapus item galeri?"

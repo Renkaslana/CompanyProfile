@@ -76,15 +76,16 @@ export function ServiceActionsRow({
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={published ? `Unpublish ${title}` : `Publish ${title}`}
+              title={published ? "Sembunyikan dari publik" : "Publikasikan"}
               className={published ? "text-amber-700 hover:bg-amber-50" : "text-emerald-700 hover:bg-emerald-50"}
             >
               {published ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-              {published ? "Unpublish" : "Publish"}
             </Button>
           }
-          title={published ? "Unpublish layanan?" : "Publish layanan?"}
+          title={published ? "Sembunyikan layanan?" : "Publikasikan layanan?"}
           description={
             published ? (
               <>
@@ -96,7 +97,7 @@ export function ServiceActionsRow({
               </>
             )
           }
-          confirmLabel={published ? "Unpublish" : "Publish"}
+          confirmLabel={published ? "Sembunyikan" : "Publikasikan"}
           variant={published ? "danger" : "default"}
           action={togglePublishServiceAction}
           hiddenFields={{ id }}
@@ -119,12 +120,13 @@ export function ServiceActionsRow({
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Hapus ${title}`}
+              title="Hapus"
               className="text-destructive hover:bg-destructive/5"
             >
               <Trash2 className="size-3.5" />
-              Hapus
             </Button>
           }
           title="Hapus layanan?"

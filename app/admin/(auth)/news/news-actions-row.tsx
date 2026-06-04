@@ -3,15 +3,9 @@
 /**
  * Per-row admin actions for the News list page.
  *
- *   • Publish        (DRAFT  → PUBLISHED)
- *   • Unpublish      (PUBLISHED → DRAFT)
- *   • Archive        (any → ARCHIVED)
- *   • Restore        (ARCHIVED → DRAFT)
- *   • Edit           (Link)
- *   • Delete         (ConfirmDialog)
- *
- * RBAC at UI: hides buttons the user can't action; the service layer
- * still enforces (defense in depth).
+ * UX 6: secondary actions are icon-only with tooltip + aria-label, Edit is
+ * the only labeled button. Reduces visual clutter while keeping every action
+ * one click away.
  */
 import Link from "next/link";
 import { Archive, ArchiveRestore, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
@@ -37,21 +31,22 @@ type Props = {
 export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Props) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-1.5">
-      {/* Publish / Unpublish */}
+      {/* Publish / Unpublish / Restore — single icon, depends on current status */}
       {canPublish && status === "DRAFT" && (
         <ConfirmDialog
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Publikasikan ${title}`}
+              title="Publikasikan"
               className="text-emerald-700 hover:bg-emerald-50"
             >
               <Eye className="size-3.5" />
-              Publish
             </Button>
           }
-          title="Publish berita?"
+          title="Publikasikan berita?"
           description={
             <>
               <strong>{title}</strong> akan tampil di halaman /berita. Tanggal
@@ -59,7 +54,7 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
               sebelumnya).
             </>
           }
-          confirmLabel="Publish"
+          confirmLabel="Publikasikan"
           variant="default"
           action={publishNewsAction}
           hiddenFields={{ id }}
@@ -70,22 +65,23 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Sembunyikan ${title} dari publik`}
+              title="Sembunyikan dari publik"
               className="text-amber-700 hover:bg-amber-50"
             >
               <EyeOff className="size-3.5" />
-              Unpublish
             </Button>
           }
-          title="Unpublish berita?"
+          title="Sembunyikan berita dari publik?"
           description={
             <>
               <strong>{title}</strong> akan kembali ke status Draft & disembunyikan
               dari halaman publik. Tanggal publikasi asli tetap disimpan.
             </>
           }
-          confirmLabel="Unpublish"
+          confirmLabel="Sembunyikan"
           variant="danger"
           action={unpublishNewsAction}
           hiddenFields={{ id }}
@@ -96,19 +92,20 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Pulihkan ${title} dari arsip`}
+              title="Pulihkan dari arsip"
               className="text-sky-700 hover:bg-sky-50"
             >
               <ArchiveRestore className="size-3.5" />
-              Pulihkan
             </Button>
           }
           title="Pulihkan dari arsip?"
           description={
             <>
               <strong>{title}</strong> akan kembali ke status Draft. Anda bisa
-              meninjau lalu publish lagi jika perlu.
+              meninjau lalu publikasikan lagi jika perlu.
             </>
           }
           confirmLabel="Pulihkan"
@@ -124,12 +121,13 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Arsipkan ${title}`}
+              title="Arsipkan"
               className="text-muted-foreground hover:bg-muted"
             >
               <Archive className="size-3.5" />
-              Arsipkan
             </Button>
           }
           title="Arsipkan berita?"
@@ -146,7 +144,7 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
         />
       )}
 
-      {/* Edit */}
+      {/* Edit — primary, labeled */}
       {canWrite && (
         <Button
           size="sm"
@@ -158,18 +156,19 @@ export function NewsActionsRow({ id, title, status, canWrite, canPublish }: Prop
         </Button>
       )}
 
-      {/* Delete */}
+      {/* Delete — secondary, icon-only */}
       {canWrite && (
         <ConfirmDialog
           trigger={
             <Button
               type="button"
-              size="sm"
+              size="icon-sm"
               variant="outline"
+              aria-label={`Hapus ${title}`}
+              title="Hapus"
               className="text-destructive hover:bg-destructive/5"
             >
               <Trash2 className="size-3.5" />
-              Hapus
             </Button>
           }
           title="Hapus berita?"

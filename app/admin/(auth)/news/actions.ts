@@ -64,8 +64,8 @@ function buildSummaryMessage(fieldErrors: NewsFormState["fieldErrors"]): string 
   if (entries.length === 0) return "Form tidak valid.";
   const labels: Record<string, string> = {
     title: "Judul",
-    slug: "Slug",
-    excerpt: "Excerpt",
+    slug: "URL Halaman",
+    excerpt: "Ringkasan",
     body: "Isi",
     category: "Kategori",
     displayAuthor: "Penulis",

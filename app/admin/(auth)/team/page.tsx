@@ -4,10 +4,11 @@
  */
 import Link from "next/link";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Plus, Users2 } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { Button } from "@/components/ui/button";
 import { ListToolbar } from "@/components/admin/list-toolbar";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Pagination,
   paginationFromSearchParam,
@@ -108,6 +109,21 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
 
       <ListToolbar placeholder="Cari nama / jabatan / bio…" />
 
+      {items.length === 0 && !query ? (
+        <EmptyState
+          icon={Users2}
+          title="Belum ada anggota tim"
+          description="Anggota tim akan tampil di halaman /tentang. Foto bersifat opsional — jika kosong, avatar siluet profesional otomatis dipakai."
+          action={canWrite ? { label: "Tambah anggota pertama", href: "/admin/team/new" } : undefined}
+        />
+      ) : items.length === 0 ? (
+        <EmptyState
+          mode="no-match"
+          icon={Users2}
+          title={`Tidak ada anggota tim cocok dengan "${query}".`}
+          reset={{ label: "Bersihkan pencarian", href: "/admin/team" }}
+        />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -120,21 +136,7 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {query
-                    ? `Tidak ada anggota tim yang cocok dengan "${query}".`
-                    : "Belum ada anggota tim."}{" "}
-                  {canWrite && !query && (
-                    <Link href="/admin/team/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
-                      Tambahkan anggota pertama
-                    </Link>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              items.map((t, i) => {
+            {items.map((t, i) => {
                 const photo = t.photoId ? photosById.get(t.photoId) : undefined;
                 const url = photo?.url ?? "";
                 const isCloudinary = url.startsWith("https://res.cloudinary.com");
@@ -174,11 +176,11 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={currentPage}

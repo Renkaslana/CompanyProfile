@@ -6,11 +6,12 @@
  * M10.2/3: search + pagination via shared primitives.
  */
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Newspaper, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { ListToolbar } from "@/components/admin/list-toolbar";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Pagination,
   paginationFromSearchParam,
@@ -166,41 +167,40 @@ export default async function NewsAdminPage({
         ))}
       </ListToolbar>
 
+      {rows.length === 0 && !query && !filter ? (
+        <EmptyState
+          icon={Newspaper}
+          title="Belum ada berita"
+          description="Berita yang dipublikasikan akan tampil di halaman publik /berita. Mulai dengan menulis berita pertama Anda — bisa disimpan dulu sebagai draft."
+          action={canWrite ? { label: "Tambah berita pertama", href: "/admin/news/new" } : undefined}
+        />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          mode="no-match"
+          icon={Newspaper}
+          title={
+            query
+              ? `Tidak ada berita cocok dengan "${query}".`
+              : `Belum ada berita dengan status ${filter ? STATUS_LABEL[filter] : ""}.`
+          }
+          description="Coba ubah filter atau bersihkan pencarian."
+          reset={{ label: "Lihat semua berita", href: "/admin/news" }}
+        />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Judul</th>
               <th className="px-4 py-3 w-40">Kategori</th>
-              <th className="px-4 py-3">Slug</th>
+              <th className="px-4 py-3">URL Halaman</th>
               <th className="px-4 py-3 w-32">Status</th>
               <th className="px-4 py-3 w-44">Tanggal</th>
               <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {query ? (
-                    <>Tidak ada berita yang cocok dengan &ldquo;{query}&rdquo;.</>
-                  ) : (
-                    <>
-                      Belum ada berita {filter ? `dengan status ${STATUS_LABEL[filter]}` : ""}.
-                      {canWrite && !filter && (
-                        <>
-                          {" "}
-                          <Link href="/admin/news/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
-                            Tambahkan berita pertama
-                          </Link>
-                        </>
-                      )}
-                    </>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              rows.map((n) => {
+            {rows.map((n) => {
                 const dateLabel = n.publishedAt
                   ? new Date(n.publishedAt).toISOString().slice(0, 10)
                   : n.archivedAt
@@ -251,11 +251,11 @@ export default async function NewsAdminPage({
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={currentPage}

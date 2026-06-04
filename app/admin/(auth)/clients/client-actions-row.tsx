@@ -48,9 +48,8 @@ export function ClientActionsRow({ id, name, isFirst, isLast, canWrite }: Props)
       </Button>
       <ConfirmDialog
         trigger={
-          <Button type="button" size="sm" variant="outline" className="text-destructive hover:bg-destructive/5">
+          <Button type="button" size="icon-sm" variant="outline" aria-label={`Hapus ${name}`} title="Hapus" className="text-destructive hover:bg-destructive/5">
             <Trash2 className="size-3.5" />
-            Hapus
           </Button>
         }
         title="Hapus klien?"

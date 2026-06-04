@@ -8,7 +8,6 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/guards";
 import { AuditRepository } from "@/server/repositories/audit.repository";
 import { UserRepository } from "@/server/repositories/user.repository";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +15,11 @@ import {
   paginationFromSearchParam,
 } from "@/components/admin/pagination";
 import { AUDIT_ACTIONS } from "@/server/audit/actions";
+import {
+  ACTION_LABEL,
+  ENTITY_LABEL,
+  summarizeAuditMeta,
+} from "@/lib/admin-i18n";
 
 const PAGE_SIZE = 25;
 
@@ -99,7 +103,7 @@ export default async function AuditPage({
     <div className="mx-auto max-w-7xl space-y-6">
       <header className="flex items-end justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink-900">Audit Log</h1>
+          <h1 className="font-display text-2xl font-bold text-ink-900">Riwayat Aktivitas</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Menampilkan <strong>{entries.length}</strong> dari total{" "}
             <strong>{total}</strong> entri
@@ -130,8 +134,8 @@ export default async function AuditPage({
           >
             <option value="">Semua aksi</option>
             {Object.values(AUDIT_ACTIONS).map((a) => (
-              <option key={a} value={a}>
-                {a}
+              <option key={a} value={a} title={a}>
+                {ACTION_LABEL[a] ?? a}
               </option>
             ))}
           </select>
@@ -152,8 +156,8 @@ export default async function AuditPage({
           >
             <option value="">Semua entity</option>
             {AUDIT_ENTITIES.map((e) => (
-              <option key={e} value={e}>
-                {e}
+              <option key={e} value={e} title={e}>
+                {ENTITY_LABEL[e] ?? e}
               </option>
             ))}
           </select>
@@ -198,16 +202,19 @@ export default async function AuditPage({
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-3 w-44">Waktu</th>
-              <th className="px-4 py-3">Aktor</th>
-              <th className="px-4 py-3 w-48">Aksi</th>
-              <th className="px-4 py-3 w-40">Entity</th>
-              <th className="px-4 py-3">Meta</th>
+              <th className="px-4 py-3">Pengguna</th>
+              <th className="px-4 py-3 w-56">Aktivitas</th>
+              <th className="px-4 py-3 w-40">Objek</th>
+              <th className="px-4 py-3">Detail</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {entries.map((e) => {
               const actor = actorMap.get(e.actorId);
-              const metaStr = e.meta ? JSON.stringify(e.meta) : "—";
+              const actionLabel = ACTION_LABEL[e.action] ?? e.action;
+              const entityLabel = ENTITY_LABEL[e.entity] ?? e.entity;
+              const metaSummary = summarizeAuditMeta(e.meta);
+              const metaJson = e.meta ? JSON.stringify(e.meta) : "—";
               return (
                 <tr key={e.id} className="hover:bg-muted/20">
                   <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
@@ -221,23 +228,30 @@ export default async function AuditPage({
                       </div>
                     ) : e.actorId === "anonymous" ? (
                       <span className="font-mono text-xs italic text-muted-foreground">
-                        anonymous
+                        anonim
                       </span>
                     ) : (
                       <span
                         className="font-mono text-xs text-muted-foreground"
-                        title="User no longer exists in the database"
+                        title="Pengguna sudah tidak ada di database"
                       >
                         {e.actorId.slice(0, 12)}…
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-2.5">
-                    <StatusBadge status={e.action} />
+                    <span
+                      className="inline-flex rounded-full bg-brand-orange/10 px-2 py-0.5 text-xs font-medium text-brand-orange-strong"
+                      title={e.action}
+                    >
+                      {actionLabel}
+                    </span>
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="leading-tight">
-                      <p className="text-xs font-medium text-ink-900">{e.entity}</p>
+                      <p className="text-xs font-medium text-ink-900" title={e.entity}>
+                        {entityLabel}
+                      </p>
                       {e.entityId && (
                         <p
                           className="font-mono text-[10px] text-muted-foreground"
@@ -251,10 +265,10 @@ export default async function AuditPage({
                     </div>
                   </td>
                   <td
-                    className="px-4 py-2.5 max-w-md truncate font-mono text-[11px] text-muted-foreground"
-                    title={metaStr}
+                    className="px-4 py-2.5 max-w-md truncate text-xs text-muted-foreground"
+                    title={metaJson}
                   >
-                    {metaStr}
+                    {metaSummary}
                   </td>
                 </tr>
               );

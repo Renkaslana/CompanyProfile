@@ -66,7 +66,7 @@ function buildSummaryMessage(fieldErrors: ServiceFormState["fieldErrors"]): stri
   if (entries.length === 0) return "Form tidak valid.";
   const labels: Record<string, string> = {
     title: "Judul",
-    slug: "Slug",
+    slug: "URL Halaman",
     category: "Kategori",
     summary: "Ringkasan",
     body: "Deskripsi",

@@ -7,11 +7,12 @@
  * - M10.2/3: search + pagination via shared ListToolbar + Pagination primitives.
  */
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Package, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { ListToolbar } from "@/components/admin/list-toolbar";
+import { EmptyState } from "@/components/admin/empty-state";
 import {
   Pagination,
   paginationFromSearchParam,
@@ -120,8 +121,24 @@ export default async function ServicesAdminPage({
         />
       )}
 
-      <ListToolbar placeholder="Cari judul / slug / ringkasan…" />
+      <ListToolbar placeholder="Cari judul / URL halaman / ringkasan…" />
 
+      {rows.length === 0 && !query ? (
+        <EmptyState
+          icon={Package}
+          title="Belum ada layanan"
+          description="Layanan akan tampil di halaman publik /layanan setelah Anda menambahkan dan mempublikasikannya."
+          action={canWrite ? { label: "Tambah layanan pertama", href: "/admin/services/new" } : undefined}
+        />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          mode="no-match"
+          icon={Package}
+          title={`Tidak ada layanan cocok dengan "${query}".`}
+          description="Coba kata kunci lain atau bersihkan pencarian."
+          reset={{ label: "Bersihkan pencarian", href: "/admin/services" }}
+        />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -129,27 +146,13 @@ export default async function ServicesAdminPage({
               <th className="w-14 px-4 py-3">#</th>
               <th className="px-4 py-3">Judul</th>
               <th className="px-4 py-3">Kategori</th>
-              <th className="px-4 py-3">Slug</th>
+              <th className="px-4 py-3">URL Halaman</th>
               <th className="px-4 py-3 w-32">Status</th>
               <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {query
-                    ? `Tidak ada layanan yang cocok dengan "${query}".`
-                    : "Belum ada layanan."}{" "}
-                  {canWrite && !query && (
-                    <Link href="/admin/services/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
-                      Tambahkan layanan pertama
-                    </Link>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              rows.map((s, i) => (
+            {rows.map((s, i) => (
                 <tr key={s.id} className="hover:bg-muted/20">
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{s.order}</td>
                   <td className="px-4 py-3">
@@ -187,11 +190,11 @@ export default async function ServicesAdminPage({
                     />
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={currentPage}
