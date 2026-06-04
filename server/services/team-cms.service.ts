@@ -11,6 +11,11 @@ import { ContentRepository } from "@/server/repositories/content.repository";
 import { writeAudit } from "@/server/audit/write-audit";
 import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 export class TeamNotFoundError extends Error {
   constructor() {
@@ -28,9 +33,16 @@ type WriteFields = {
 };
 
 export const TeamCmsService = {
-  async list(): Promise<TeamMember[]> {
+  async list(opts: ListOpts = {}): Promise<TeamMember[]> {
     await requirePermission("content:read");
-    return ContentRepository.findAllTeam();
+    const all = await ContentRepository.findAllTeam();
+    return applyListOpts(all, opts, (t) => [t.name, t.role, t.bio]);
+  },
+
+  async count(opts: Pick<ListOpts, "q"> = {}): Promise<number> {
+    await requirePermission("content:read");
+    const all = await ContentRepository.findAllTeam();
+    return countListOpts(all, opts, (t) => [t.name, t.role, t.bio]);
   },
 
   async findById(id: string): Promise<TeamMember | null> {

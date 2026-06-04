@@ -21,6 +21,11 @@ import { ContentRepository } from "@/server/repositories/content.repository";
 import { writeAudit } from "@/server/audit/write-audit";
 import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 export class SlugTakenError extends Error {
   constructor(slug: string) {
@@ -50,10 +55,22 @@ type WriteFields = {
 };
 
 export const ServiceCmsService = {
-  /** All services, drafts included — for the admin list page. */
-  async list(): Promise<Service[]> {
+  /**
+   * All services, drafts included — for the admin list page.
+   * `q` (optional): case-insensitive substring match against title + slug.
+   * `skip` / `take`: server-side pagination.
+   */
+  async list(opts: ListOpts = {}): Promise<Service[]> {
     await requirePermission("content:read");
-    return ContentRepository.findAllServices();
+    const all = await ContentRepository.findAllServices();
+    return applyListOpts(all, opts, (s) => [s.title, s.slug, s.summary]);
+  },
+
+  /** Count of services matching `q` (for pagination total). */
+  async count(opts: Pick<ListOpts, "q"> = {}): Promise<number> {
+    await requirePermission("content:read");
+    const all = await ContentRepository.findAllServices();
+    return countListOpts(all, opts, (s) => [s.title, s.slug, s.summary]);
   },
 
   /** One service by id — for the admin edit page. */

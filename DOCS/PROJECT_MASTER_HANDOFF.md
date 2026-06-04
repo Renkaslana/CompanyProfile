@@ -5,7 +5,9 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Phase 4 M10 (Dashboard expansion + public UX polish + testimonials + legal pages + Bantuan shell + corporate silhouette avatar).
+Last update: end of Phase 4 M10 follow-up (Settings form completion M10.1 +
+admin list search M10.2 + server-side pagination M10.3 + audit-log filter
+strip M10.4).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -44,7 +46,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10 done. M3 skipped (approved). Remaining: M11 (verification + docs roll-up). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10, M10.1–M10.4 follow-up done. M3 skipped (approved). Remaining: M11 (verification + docs roll-up). |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |
@@ -954,20 +956,57 @@ deferred to Phase 8).
 
 | # | Phase / Milestone | Key deliverable |
 |---|---|---|
-| 1 | **Phase 4 M10** Dashboard expansion | Recent activity, draft counts, media usage. |
+| 1 | **Phase 4 M10** Dashboard expansion | ✅ Done — recent activity, draft counts, media usage, testimonials band, legal pages. |
+| 2 | **Phase 4 M10.1–M10.4 follow-up** | ✅ Done — Settings form testimonials/privacy/terms + admin list search & pagination + audit filter strip. |
 | 3 | **Phase 4 M11** Verify + docs roll-up | tsc/lint/build green + RBAC matrix sweep + docs update. (Public-page `force-dynamic` already landed in M6+M7+M8.) |
 | 4 | **Phase 5** Fleet management | Fleet CMS, status workflow, multi-photo. |
 | 5 | **Phase 6** Support Center | Public `/bantuan` + FAQ + ticket escalation + admin FAQ CMS + ticket assignment. |
 | 6 | **Phase 7** Lead management | Real lead persistence + Turnstile + rate limit + status workflow + LeadActivity timeline. |
-| 7 | **Phase 8** Security hardening | CSP, **MFA UI**, append-only audit, EXIF strip, CORS lock, gitleaks, **advanced audit UX (filter/CSV/pagination)**. |
+| 7 | **Phase 8** Security hardening | CSP, **MFA UI**, append-only audit, EXIF strip, CORS lock, gitleaks, **CSV export + per-actor audit scoping** (filter/pagination already landed in M10.4). |
 | 8 | **Phase 9** Testing & stabilization | Vitest + RTL + Playwright + axe + CI gate. |
 | 9 | **Phase 10** Production readiness | Sentry, Vercel deploy, CI/CD, backups, runbooks, root README. |
+
+### Phase 4 M10 follow-up — what landed
+
+| Sub | Scope | Files touched |
+|---|---|---|
+| M10.1 | Testimonials repeater (max 6) + Privacy/Terms HTML editors with live sanitized preview + sticky in-page section nav on lg+ | `app/admin/(auth)/settings/{page,settings-form,actions}.tsx`, `components/admin/media-picker.tsx` (added `onSelect` callback) |
+| M10.2 | Shared `<ListToolbar>` (client, debounced URL `?q=` sync, `react-hooks/set-state-in-effect`-safe via render-time resync). Wired into Services / News / Gallery / Team / Clients / Users list pages | `components/admin/list-toolbar.tsx`, all 6 list pages, all 6 services + `UserService` (added `count()` + `q`/`skip`/`take` to `list()`) |
+| M10.3 | Shared `<Pagination>` (pure-Link, 20 per page) + `paginationFromSearchParam()` helper. All 6 content list pages + audit | `components/admin/pagination.tsx`, `server/utils/list-filter.ts` (`applyListOpts` / `countListOpts`), all list pages |
+| M10.4 | Audit log: action `<select>` (from `AUDIT_ACTIONS`) + entity `<select>` (allowlist matching writeAudit strings) + free-text q against entity/entityId. Pagination 25/page. CSV/append-only still Phase 8 | `app/admin/(auth)/audit/page.tsx`, `server/repositories/audit.repository.ts` (added `action`/`entity`/`q` + `count()`) |
+
+Implementation notes:
+- **Post-fetch filter pattern.** Each service `.list({ q, skip, take })` and `.count({ q })` fetches the full ordered list via the existing repository call, then runs a small JS filter + slice. At the current row counts (< 200 / module) this is fast; once any module crosses ~200 rows, the same surface can be pushed into Prisma `where` + `take` without changing call sites.
+- **Reorder buttons at page edges.** The `isFirst` / `isLast` props now compose page index with row index (`i === 0 && currentPage === 1` and `i === rows.length - 1 && currentPage * PAGE_SIZE >= total`) so the per-row arrows respect the visible position.
+- **MediaPicker.** Gained an optional `onSelect?: (id) => void` so parents that don't post the picker's hidden input directly (Settings serializes a parent JSON) still observe selections. Existing callers (News editor) are unchanged.
+- **Settings revalidate paths.** `updateSettingsAction` now also revalidates `/karir`, `/bantuan`, `/privasi`, `/syarat-ketentuan` so the new public consumers refresh on save.
 
 ---
 
 ## 17. Recommended Next Action
 
-**Begin Phase 4 M9 — Stats + Settings CMS.**
+**Begin Phase 4 M11 — Verification + docs roll-up** (closes Phase 4).
+
+### Why M11 next
+- M10 follow-up landed the Settings R4 gap + admin list search + pagination
+  + audit filter strip. Phase 4 is now feature-complete; only verification
+  remains before Phase 5 (Fleet CMS).
+- A clean Phase 4 close lets Phase 5 inherit the new list-page UX pattern
+  from day one (Fleet → FAQ → Leads all reuse `<ListToolbar>` + `<Pagination>`).
+
+### What M11 will deliver
+- RBAC matrix sweep: walk every `requirePermission(...)` call against the
+  permission map (`server/auth/permissions.ts`) and confirm no over- or
+  under-granting.
+- Static checks green: `npx tsc --noEmit`, `npm run lint`, `npm run build`.
+- Live preview MCP smoke for every admin module touched in Phase 4.
+- Docs roll-up: refresh `CHANGELOG.md`, ARCHITECTURE.md, and any ADR
+  cross-refs that drifted across M1–M10.
+
+### Out of scope here
+- New features. M11 is a verification + docs phase only.
+
+### Historical: Phase 4 M9 (already done, kept for context)
 
 ### Why M9 next
 - M8 is complete; with Services, News, Gallery, Team, and Clients done,

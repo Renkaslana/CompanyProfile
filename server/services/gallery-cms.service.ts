@@ -18,6 +18,11 @@ import { ContentRepository } from "@/server/repositories/content.repository";
 import { writeAudit } from "@/server/audit/write-audit";
 import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 export class GalleryNotFoundError extends Error {
   constructor() {
@@ -34,9 +39,16 @@ type WriteFields = {
 };
 
 export const GalleryCmsService = {
-  async list(): Promise<GalleryItem[]> {
+  async list(opts: ListOpts = {}): Promise<GalleryItem[]> {
     await requirePermission("content:read");
-    return ContentRepository.findAllGallery();
+    const all = await ContentRepository.findAllGallery();
+    return applyListOpts(all, opts, (g) => [g.title, g.category]);
+  },
+
+  async count(opts: Pick<ListOpts, "q"> = {}): Promise<number> {
+    await requirePermission("content:read");
+    const all = await ContentRepository.findAllGallery();
+    return countListOpts(all, opts, (g) => [g.title, g.category]);
   },
 
   async findById(id: string): Promise<GalleryItem | null> {

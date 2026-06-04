@@ -3,12 +3,18 @@
  *
  * Status filter chips (All / Draft / Published / Archived) via search-param.
  * Actions per row vary by status (see NewsActionsRow).
+ * M10.2/3: search + pagination via shared primitives.
  */
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { cn } from "@/lib/utils";
 import { requirePermission } from "@/server/auth/guards";
 import { NewsCmsService } from "@/server/services/news-cms.service";
@@ -19,8 +25,12 @@ import {
 } from "@/lib/validation/news";
 import { NewsActionsRow } from "./news-actions-row";
 
+const PAGE_SIZE = 20;
+
 type SearchParams = Promise<{
   status?: string;
+  q?: string;
+  page?: string;
   updated?: string;
   error?: string;
 }>;
@@ -48,15 +58,40 @@ export default async function NewsAdminPage({
   searchParams: SearchParams;
 }) {
   const session = await requirePermission("content:read");
-  const { status, updated, error } = await searchParams;
+  const { status, q, page, updated, error } = await searchParams;
 
   const filter = NEWS_STATUSES.includes(status as NewsStatus)
     ? (status as NewsStatus)
     : undefined;
+  const query = q?.trim() || undefined;
 
-  const rows = await NewsCmsService.list(filter);
+  const total = await NewsCmsService.count(filter, { q: query });
+  const { page: currentPage, skip, take } = paginationFromSearchParam(
+    page,
+    total,
+    PAGE_SIZE,
+  );
+  const rows = await NewsCmsService.list(filter, { q: query, skip, take });
+
   const canWrite = session.permissions.includes("content:write");
   const canPublish = session.permissions.includes("content:publish");
+
+  function buildChipHref(s?: NewsStatus): string {
+    const params = new URLSearchParams();
+    if (s) params.set("status", s);
+    if (query) params.set("q", query);
+    const qs = params.toString();
+    return qs ? `/admin/news?${qs}` : "/admin/news";
+  }
+
+  function buildPageHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (filter) params.set("status", filter);
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/news?${qs}` : "/admin/news";
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -103,10 +138,9 @@ export default async function NewsAdminPage({
         />
       )}
 
-      {/* Status filter chips */}
-      <div className="flex flex-wrap gap-2">
+      <ListToolbar placeholder="Cari judul / slug / excerpt / kategori…">
         <Link
-          href="/admin/news"
+          href={buildChipHref()}
           className={cn(
             "rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wider",
             !filter
@@ -119,7 +153,7 @@ export default async function NewsAdminPage({
         {NEWS_STATUSES.map((s) => (
           <Link
             key={s}
-            href={`/admin/news?status=${s}`}
+            href={buildChipHref(s)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wider",
               filter === s
@@ -130,7 +164,7 @@ export default async function NewsAdminPage({
             {STATUS_LABEL[s]}
           </Link>
         ))}
-      </div>
+      </ListToolbar>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
@@ -148,13 +182,19 @@ export default async function NewsAdminPage({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Belum ada berita {filter ? `dengan status ${STATUS_LABEL[filter]}` : ""}.
-                  {canWrite && !filter && (
+                  {query ? (
+                    <>Tidak ada berita yang cocok dengan &ldquo;{query}&rdquo;.</>
+                  ) : (
                     <>
-                      {" "}
-                      <Link href="/admin/news/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
-                        Tambahkan berita pertama
-                      </Link>
+                      Belum ada berita {filter ? `dengan status ${STATUS_LABEL[filter]}` : ""}.
+                      {canWrite && !filter && (
+                        <>
+                          {" "}
+                          <Link href="/admin/news/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
+                            Tambahkan berita pertama
+                          </Link>
+                        </>
+                      )}
                     </>
                   )}
                 </td>
@@ -216,6 +256,13 @@ export default async function NewsAdminPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildPageHref}
+      />
     </div>
   );
 }

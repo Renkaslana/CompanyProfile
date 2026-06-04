@@ -1,17 +1,30 @@
+/**
+ * Admin Users list — /admin/users
+ * M10.2/3: search + pagination via shared primitives.
+ */
 import Link from "next/link";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { FormBanner } from "@/components/admin/admin-form";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { requirePermission } from "@/server/auth/guards";
 import { UserService } from "@/server/services/user.service";
 import { UserActionsRow } from "./user-actions-row";
+
+const PAGE_SIZE = 20;
 
 type SearchParams = Promise<{
   created?: string;
   setupLink?: string;
   updated?: string;
   error?: string;
+  q?: string;
+  page?: string;
 }>;
 
 const ERROR_MAP: Record<string, string> = {
@@ -34,11 +47,23 @@ export default async function UsersPage({
   searchParams: SearchParams;
 }) {
   const session = await requirePermission("users:manage");
-  const [users, roles] = await Promise.all([
-    UserService.list(),
+  const { created, setupLink, updated, error, q, page } = await searchParams;
+
+  const query = q?.trim() || undefined;
+  const [total, roles] = await Promise.all([
+    UserService.count({ q: query }),
     UserService.listRoles(),
   ]);
-  const { created, setupLink, updated, error } = await searchParams;
+  const { page: currentPage, skip, take } = paginationFromSearchParam(page, total, PAGE_SIZE);
+  const users = await UserService.list({ q: query, skip, take });
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/users?${qs}` : "/admin/users";
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -96,6 +121,8 @@ export default async function UsersPage({
         />
       )}
 
+      <ListToolbar placeholder="Cari nama / email / peran…" />
+
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -108,59 +135,76 @@ export default async function UsersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {users.map((u) => {
-              const isSelf = u.id === session.id;
-              const isDisabled = u.disabledAt !== null;
-              const status = isDisabled
-                ? "ARCHIVED" // visually reuses our archived style for "Dinonaktifkan"
-                : u.mustChangePassword
-                ? "DRAFT"
-                : "ACTIVE";
-              const statusLabel = isDisabled
-                ? "Dinonaktifkan"
-                : u.mustChangePassword
-                ? "Setup pending"
-                : "Aktif";
-              return (
-                <tr key={u.id} className="hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium text-ink-900">
-                    {u.name}
-                    {isSelf && (
-                      <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                        (Anda)
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                  {query
+                    ? `Tidak ada pengguna yang cocok dengan "${query}".`
+                    : "Belum ada pengguna."}
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => {
+                const isSelf = u.id === session.id;
+                const isDisabled = u.disabledAt !== null;
+                const status = isDisabled
+                  ? "ARCHIVED"
+                  : u.mustChangePassword
+                  ? "DRAFT"
+                  : "ACTIVE";
+                const statusLabel = isDisabled
+                  ? "Dinonaktifkan"
+                  : u.mustChangePassword
+                  ? "Setup pending"
+                  : "Aktif";
+                return (
+                  <tr key={u.id} className="hover:bg-muted/20">
+                    <td className="px-4 py-3 font-medium text-ink-900">
+                      {u.name}
+                      {isSelf && (
+                        <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                          (Anda)
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-brand-orange/12 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-brand-orange-strong">
+                        {u.role.name}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-brand-orange/12 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-brand-orange-strong">
-                      {u.role.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-2">
-                      <StatusBadge status={status} />
-                      <span className="text-xs text-muted-foreground">
-                        {statusLabel}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-2">
+                        <StatusBadge status={status} />
+                        <span className="text-xs text-muted-foreground">
+                          {statusLabel}
+                        </span>
                       </span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <UserActionsRow
-                      userId={u.id}
-                      currentRoleId={u.roleId}
-                      currentRoleName={u.role.name}
-                      isSelf={isSelf}
-                      isDisabled={isDisabled}
-                      roles={roles}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <UserActionsRow
+                        userId={u.id}
+                        currentRoleId={u.roleId}
+                        currentRoleName={u.role.name}
+                        isSelf={isSelf}
+                        isDisabled={isDisabled}
+                        roles={roles}
+                      />
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

@@ -40,6 +40,13 @@ type Props = {
   assets: MediaPickerAsset[];
   /** Optional label for the trigger button. */
   triggerLabel?: string;
+  /**
+   * Optional change callback. Lets parents that don't post the picker's hidden
+   * input (e.g. Settings, which serializes a parent JSON state into a single
+   * companyJson hidden input) observe the selection. Called with the new id
+   * or `undefined` when the user clears the selection.
+   */
+  onSelect?: (id: string | undefined) => void;
 };
 
 export function MediaPicker({
@@ -47,11 +54,17 @@ export function MediaPicker({
   defaultValue,
   assets,
   triggerLabel = "Pilih dari Media Library",
+  onSelect,
 }: Props) {
   const inputId = useId();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | undefined>(defaultValue);
   const [q, setQ] = useState("");
+
+  function commitSelected(next: string | undefined) {
+    setSelected(next);
+    onSelect?.(next);
+  }
 
   const filtered = useMemo(() => {
     if (!q.trim()) return assets;
@@ -90,7 +103,7 @@ export function MediaPicker({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setSelected(undefined)}
+            onClick={() => commitSelected(undefined)}
             aria-label="Hapus pilihan"
           >
             <X className="size-4" />
@@ -139,7 +152,7 @@ export function MediaPicker({
                       <button
                         key={a.id}
                         type="button"
-                        onClick={() => setSelected(a.id)}
+                        onClick={() => commitSelected(a.id)}
                         className={cn(
                           "group relative overflow-hidden rounded-lg border bg-muted text-left transition-colors",
                           isSel

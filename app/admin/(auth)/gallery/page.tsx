@@ -1,22 +1,30 @@
 /**
  * Gallery CMS list — /admin/gallery
  *
- * Shows all gallery items (ordered by `order` ASC) with thumbnail, title,
- * category, order index, and per-row actions.
+ * M10.2/3: search + pagination via shared primitives.
  */
 import Link from "next/link";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { Button } from "@/components/ui/button";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { requirePermission } from "@/server/auth/guards";
 import { GalleryCmsService } from "@/server/services/gallery-cms.service";
 import { MediaRepository } from "@/server/repositories/media.repository";
 import { GalleryActionsRow } from "./gallery-actions-row";
 
+const PAGE_SIZE = 20;
+
 type SearchParams = Promise<{
   updated?: string;
   error?: string;
+  q?: string;
+  page?: string;
 }>;
 
 const UPDATED_MAP: Record<string, string> = {
@@ -38,8 +46,16 @@ export default async function GalleryAdminPage({
   searchParams: SearchParams;
 }) {
   const session = await requirePermission("content:read");
-  const items = await GalleryCmsService.list();
-  const { updated, error } = await searchParams;
+  const { updated, error, q, page } = await searchParams;
+
+  const query = q?.trim() || undefined;
+  const total = await GalleryCmsService.count({ q: query });
+  const { page: currentPage, skip, take } = paginationFromSearchParam(
+    page,
+    total,
+    PAGE_SIZE,
+  );
+  const items = await GalleryCmsService.list({ q: query, skip, take });
 
   // Batched media lookup so we can render thumbnails alongside each row.
   const mediaIds = [...new Set(items.map((i) => i.mediaId))];
@@ -47,6 +63,14 @@ export default async function GalleryAdminPage({
   const mediaById = new Map(mediaAssets.map((m) => [m.id, m]));
 
   const canWrite = session.permissions.includes("content:write");
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/gallery?${qs}` : "/admin/gallery";
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -93,6 +117,8 @@ export default async function GalleryAdminPage({
         />
       )}
 
+      <ListToolbar placeholder="Cari judul / kategori…" />
+
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -108,8 +134,10 @@ export default async function GalleryAdminPage({
             {items.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Belum ada item galeri.{" "}
-                  {canWrite && (
+                  {query
+                    ? `Tidak ada item galeri yang cocok dengan "${query}".`
+                    : "Belum ada item galeri."}{" "}
+                  {canWrite && !query && (
                     <Link href="/admin/gallery/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
                       Tambahkan item pertama
                     </Link>
@@ -154,8 +182,8 @@ export default async function GalleryAdminPage({
                       <GalleryActionsRow
                         id={g.id}
                         title={g.title}
-                        isFirst={i === 0}
-                        isLast={i === items.length - 1}
+                        isFirst={i === 0 && currentPage === 1}
+                        isLast={i === items.length - 1 && currentPage * PAGE_SIZE >= total}
                         canWrite={canWrite}
                       />
                     </td>
@@ -166,6 +194,13 @@ export default async function GalleryAdminPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

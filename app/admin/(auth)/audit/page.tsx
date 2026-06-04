@@ -1,22 +1,99 @@
+/**
+ * Audit Log — /admin/audit
+ *
+ * M10.4: lightweight filter strip (action / entity / q) + server-side pagination.
+ * Heavier work (CSV export, append-only privileges) stays in Phase 8.
+ */
+import Link from "next/link";
 import { requirePermission } from "@/server/auth/guards";
 import { AuditRepository } from "@/server/repositories/audit.repository";
 import { UserRepository } from "@/server/repositories/user.repository";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
+import { AUDIT_ACTIONS } from "@/server/audit/actions";
 
-export default async function AuditPage() {
+const PAGE_SIZE = 25;
+
+/**
+ * Stable allowlist of `entity` strings the services pass to writeAudit. Kept
+ * in sync with the literal strings used across server/services/*.service.ts.
+ */
+const AUDIT_ENTITIES = [
+  "User",
+  "Auth",
+  "Service",
+  "NewsPost",
+  "GalleryItem",
+  "TeamMember",
+  "ClientLogo",
+  "Stat",
+  "SiteSettings",
+  "MediaAsset",
+] as const;
+
+type SearchParams = Promise<{
+  action?: string;
+  entity?: string;
+  q?: string;
+  page?: string;
+}>;
+
+export default async function AuditPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await requirePermission("audit:read");
-  const [entries, total] = await Promise.all([
-    AuditRepository.list({ limit: 100 }),
-    AuditRepository.count(),
-  ]);
+  const { action, entity, q, page } = await searchParams;
 
-  // Batched actor lookup — join AuditLog.actorId → User.name + email so the
-  // table reads naturally. Raw cuid is preserved as a hover title for traceability.
+  // Normalize / allowlist filter params so URL trash falls back to "all".
+  const actionFilter =
+    action && Object.values(AUDIT_ACTIONS).includes(action as never)
+      ? action
+      : undefined;
+  const entityFilter =
+    entity && (AUDIT_ENTITIES as readonly string[]).includes(entity)
+      ? entity
+      : undefined;
+  const query = q?.trim() || undefined;
+
+  const filter = { action: actionFilter, entity: entityFilter, q: query };
+
+  const total = await AuditRepository.count(filter);
+  const { page: currentPage, skip, take } = paginationFromSearchParam(
+    page,
+    total,
+    PAGE_SIZE,
+  );
+  const entries = await AuditRepository.list({
+    ...filter,
+    limit: take,
+    offset: skip,
+  });
+
+  // Batched actor lookup.
   const actorIds = [
     ...new Set(entries.map((e) => e.actorId).filter((id) => !!id && id !== "anonymous")),
   ];
   const actors = await UserRepository.findManyByIdSafe(actorIds);
   const actorMap = new Map(actors.map((a) => [a.id, a]));
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (actionFilter) params.set("action", actionFilter);
+    if (entityFilter) params.set("entity", entityFilter);
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/audit?${qs}` : "/admin/audit";
+  }
+
+  const filtersActive = Boolean(actionFilter || entityFilter || query);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -24,11 +101,97 @@ export default async function AuditPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-ink-900">Audit Log</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            100 entri terbaru dari total <strong>{total}</strong>. Read-only.
-            Phase 8 hardening menambahkan append-only privileges di DB.
+            Menampilkan <strong>{entries.length}</strong> dari total{" "}
+            <strong>{total}</strong> entri
+            {filtersActive ? " (sesuai filter)" : ""}. Read-only — Phase 8 akan
+            menambahkan append-only privileges di DB + ekspor CSV.
           </p>
         </div>
       </header>
+
+      {/* Filter strip — submits a fresh GET so URL is always shareable. */}
+      <form
+        method="GET"
+        action="/admin/audit"
+        className="flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
+      >
+        <div className="grid gap-1.5">
+          <label
+            htmlFor="audit-action"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Aksi
+          </label>
+          <select
+            id="audit-action"
+            name="action"
+            defaultValue={actionFilter ?? ""}
+            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+          >
+            <option value="">Semua aksi</option>
+            {Object.values(AUDIT_ACTIONS).map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid gap-1.5">
+          <label
+            htmlFor="audit-entity"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Entity
+          </label>
+          <select
+            id="audit-entity"
+            name="entity"
+            defaultValue={entityFilter ?? ""}
+            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+          >
+            <option value="">Semua entity</option>
+            {AUDIT_ENTITIES.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid flex-1 gap-1.5 sm:max-w-xs">
+          <label
+            htmlFor="audit-q"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Cari (entity / entityId)
+          </label>
+          <Input
+            id="audit-q"
+            name="q"
+            type="search"
+            defaultValue={query ?? ""}
+            placeholder="cuid, slug, atau nama entity…"
+            autoComplete="off"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button type="submit" variant="outline" size="sm">
+            Terapkan
+          </Button>
+          {filtersActive && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              render={<Link href="/admin/audit" />}
+            >
+              Reset
+            </Button>
+          )}
+        </div>
+      </form>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
@@ -102,13 +265,22 @@ export default async function AuditPage() {
                   colSpan={5}
                   className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
-                  Belum ada entri audit.
+                  {filtersActive
+                    ? "Tidak ada entri audit yang cocok dengan filter."
+                    : "Belum ada entri audit."}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

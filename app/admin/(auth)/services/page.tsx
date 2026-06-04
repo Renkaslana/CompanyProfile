@@ -4,20 +4,30 @@
  * - Lists all services (drafts + published) ordered by `order` ASC.
  * - Status, category, slug, reorder ↑↓, publish toggle, edit, delete.
  * - Read gated by `content:read`; mutation buttons hidden per permission.
+ * - M10.2/3: search + pagination via shared ListToolbar + Pagination primitives.
  */
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { requirePermission } from "@/server/auth/guards";
 import { ServiceCmsService } from "@/server/services/service-cms.service";
 import { CATEGORY_LABEL, type ServiceCategory } from "@/lib/validation/service";
 import { ServiceActionsRow } from "./service-actions-row";
 
+const PAGE_SIZE = 20;
+
 type SearchParams = Promise<{
   updated?: string;
   error?: string;
+  q?: string;
+  page?: string;
 }>;
 
 const UPDATED_MAP: Record<string, string> = {
@@ -43,11 +53,27 @@ export default async function ServicesAdminPage({
   searchParams: SearchParams;
 }) {
   const session = await requirePermission("content:read");
-  const rows = await ServiceCmsService.list();
-  const { updated, error } = await searchParams;
+  const { updated, error, q, page } = await searchParams;
+
+  const query = q?.trim() || undefined;
+  const total = await ServiceCmsService.count({ q: query });
+  const { page: currentPage, skip, take } = paginationFromSearchParam(
+    page,
+    total,
+    PAGE_SIZE,
+  );
+  const rows = await ServiceCmsService.list({ q: query, skip, take });
 
   const canWrite = session.permissions.includes("content:write");
   const canPublish = session.permissions.includes("content:publish");
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/services?${qs}` : "/admin/services";
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -94,6 +120,8 @@ export default async function ServicesAdminPage({
         />
       )}
 
+      <ListToolbar placeholder="Cari judul / slug / ringkasan…" />
+
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -110,7 +138,10 @@ export default async function ServicesAdminPage({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Belum ada layanan. {canWrite && (
+                  {query
+                    ? `Tidak ada layanan yang cocok dengan "${query}".`
+                    : "Belum ada layanan."}{" "}
+                  {canWrite && !query && (
                     <Link href="/admin/services/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
                       Tambahkan layanan pertama
                     </Link>
@@ -149,8 +180,8 @@ export default async function ServicesAdminPage({
                       id={s.id}
                       title={s.title}
                       published={s.published}
-                      isFirst={i === 0}
-                      isLast={i === rows.length - 1}
+                      isFirst={i === 0 && currentPage === 1}
+                      isLast={i === rows.length - 1 && currentPage * PAGE_SIZE >= total}
                       canPublish={canPublish}
                       canWrite={canWrite}
                     />
@@ -161,6 +192,13 @@ export default async function ServicesAdminPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

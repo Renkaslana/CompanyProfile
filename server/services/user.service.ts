@@ -26,6 +26,11 @@ import {
   SuperAdminFloorError,
 } from "@/server/auth/guards";
 import { ROLES } from "@/server/auth/permissions";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 const PLACEHOLDER_PASSWORD = "!pending-phase-3!";
 
@@ -48,8 +53,14 @@ async function countActiveSuperAdminsExcluding(
 }
 
 export const UserService = {
-  async list() {
-    return UserRepository.list();
+  async list(opts: ListOpts = {}) {
+    const all = await UserRepository.list();
+    return applyListOpts(all, opts, (u) => [u.name, u.email, u.role.name]);
+  },
+
+  async count(opts: Pick<ListOpts, "q"> = {}) {
+    const all = await UserRepository.list();
+    return countListOpts(all, opts, (u) => [u.name, u.email, u.role.name]);
   },
 
   async findById(id: string) {

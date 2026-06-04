@@ -34,6 +34,11 @@ import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
 import { sanitizeRichText } from "@/components/admin/sanitized-html";
 import type { NewsStatus } from "@/lib/validation/news";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 export class SlugTakenError extends Error {
   constructor(slug: string) {
@@ -61,9 +66,27 @@ type WriteFields = {
 };
 
 export const NewsCmsService = {
-  async list(status?: NewsStatus): Promise<NewsPostWithAuthor[]> {
+  /**
+   * News posts with optional `status` chip filter + `q`/`skip`/`take` toolbar.
+   * Status filter is applied at the DB layer; `q` is post-fetch by title/excerpt/category.
+   */
+  async list(
+    status: NewsStatus | undefined,
+    opts: ListOpts = {},
+  ): Promise<NewsPostWithAuthor[]> {
     await requirePermission("content:read");
-    return ContentRepository.findAllNews({ status });
+    const all = await ContentRepository.findAllNews({ status });
+    return applyListOpts(all, opts, (n) => [n.title, n.slug, n.excerpt, n.category]);
+  },
+
+  /** Count for pagination (respects both status + q filters). */
+  async count(
+    status: NewsStatus | undefined,
+    opts: Pick<ListOpts, "q"> = {},
+  ): Promise<number> {
+    await requirePermission("content:read");
+    const all = await ContentRepository.findAllNews({ status });
+    return countListOpts(all, opts, (n) => [n.title, n.slug, n.excerpt, n.category]);
   },
 
   async findById(id: string): Promise<NewsPostWithAuthor | null> {

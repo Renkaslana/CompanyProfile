@@ -25,6 +25,10 @@ function revalidatePublic() {
   revalidatePath("/");
   revalidatePath("/tentang");
   revalidatePath("/kontak");
+  revalidatePath("/karir");
+  revalidatePath("/bantuan");
+  revalidatePath("/privasi");
+  revalidatePath("/syarat-ketentuan");
 }
 
 function buildSummaryMessage(fieldErrors: Record<string, string[]>): string {

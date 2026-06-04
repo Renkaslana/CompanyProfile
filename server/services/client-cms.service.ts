@@ -11,6 +11,11 @@ import { ContentRepository } from "@/server/repositories/content.repository";
 import { writeAudit } from "@/server/audit/write-audit";
 import { AUDIT_ACTIONS } from "@/server/audit/actions";
 import { requirePermission, type SessionUser } from "@/server/auth/guards";
+import {
+  applyListOpts,
+  countListOpts,
+  type ListOpts,
+} from "@/server/utils/list-filter";
 
 export class ClientNotFoundError extends Error {
   constructor() {
@@ -28,9 +33,16 @@ type WriteFields = {
 };
 
 export const ClientCmsService = {
-  async list(): Promise<ClientLogo[]> {
+  async list(opts: ListOpts = {}): Promise<ClientLogo[]> {
     await requirePermission("content:read");
-    return ContentRepository.findAllClients();
+    const all = await ContentRepository.findAllClients();
+    return applyListOpts(all, opts, (c) => [c.name, c.sector, c.url]);
+  },
+
+  async count(opts: Pick<ListOpts, "q"> = {}): Promise<number> {
+    await requirePermission("content:read");
+    const all = await ContentRepository.findAllClients();
+    return countListOpts(all, opts, (c) => [c.name, c.sector, c.url]);
   },
 
   async findById(id: string): Promise<ClientLogo | null> {

@@ -1,17 +1,25 @@
 /**
  * Clients CMS list — /admin/clients
+ * M10.2/3: search + pagination.
  */
 import Link from "next/link";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, ExternalLink, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { Button } from "@/components/ui/button";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { requirePermission } from "@/server/auth/guards";
 import { ClientCmsService } from "@/server/services/client-cms.service";
 import { MediaRepository } from "@/server/repositories/media.repository";
 import { ClientActionsRow } from "./client-actions-row";
 
-type SearchParams = Promise<{ updated?: string; error?: string }>;
+const PAGE_SIZE = 20;
+
+type SearchParams = Promise<{ updated?: string; error?: string; q?: string; page?: string }>;
 
 const UPDATED_MAP: Record<string, string> = {
   created: "Klien berhasil ditambahkan.",
@@ -28,12 +36,25 @@ const ERROR_MAP: Record<string, string> = {
 
 export default async function ClientsAdminPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await requirePermission("content:read");
-  const items = await ClientCmsService.list();
-  const { updated, error } = await searchParams;
+  const { updated, error, q, page } = await searchParams;
+
+  const query = q?.trim() || undefined;
+  const total = await ClientCmsService.count({ q: query });
+  const { page: currentPage, skip, take } = paginationFromSearchParam(page, total, PAGE_SIZE);
+  const items = await ClientCmsService.list({ q: query, skip, take });
+
   const logoIds = [...new Set(items.map((i) => i.logoId).filter((x): x is string => !!x))];
   const logos = await MediaRepository.findManyById(logoIds);
   const logoById = new Map(logos.map((l) => [l.id, l]));
   const canWrite = session.permissions.includes("content:write");
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/clients?${qs}` : "/admin/clients";
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -76,6 +97,8 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
         />
       )}
 
+      <ListToolbar placeholder="Cari nama / sektor / URL…" />
+
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -92,8 +115,10 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
             {items.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Belum ada klien.{" "}
-                  {canWrite && (
+                  {query
+                    ? `Tidak ada klien yang cocok dengan "${query}".`
+                    : "Belum ada klien."}{" "}
+                  {canWrite && !query && (
                     <Link href="/admin/clients/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
                       Tambahkan klien pertama
                     </Link>
@@ -158,8 +183,8 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
                       <ClientActionsRow
                         id={c.id}
                         name={c.name}
-                        isFirst={i === 0}
-                        isLast={i === items.length - 1}
+                        isFirst={i === 0 && currentPage === 1}
+                        isLast={i === items.length - 1 && currentPage * PAGE_SIZE >= total}
                         canWrite={canWrite}
                       />
                     </td>
@@ -170,6 +195,13 @@ export default async function ClientsAdminPage({ searchParams }: { searchParams:
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

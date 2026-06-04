@@ -1,17 +1,25 @@
 /**
  * Team CMS list — /admin/team
+ * M10.2/3: search + pagination.
  */
 import Link from "next/link";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Plus } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { Button } from "@/components/ui/button";
+import { ListToolbar } from "@/components/admin/list-toolbar";
+import {
+  Pagination,
+  paginationFromSearchParam,
+} from "@/components/admin/pagination";
 import { requirePermission } from "@/server/auth/guards";
 import { TeamCmsService } from "@/server/services/team-cms.service";
 import { MediaRepository } from "@/server/repositories/media.repository";
 import { TeamActionsRow } from "./team-actions-row";
 
-type SearchParams = Promise<{ updated?: string; error?: string }>;
+const PAGE_SIZE = 20;
+
+type SearchParams = Promise<{ updated?: string; error?: string; q?: string; page?: string }>;
 
 const UPDATED_MAP: Record<string, string> = {
   created: "Anggota tim berhasil ditambahkan.",
@@ -37,12 +45,25 @@ function initialsAvatar(name: string): string {
 
 export default async function TeamAdminPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await requirePermission("content:read");
-  const items = await TeamCmsService.list();
-  const { updated, error } = await searchParams;
+  const { updated, error, q, page } = await searchParams;
+
+  const query = q?.trim() || undefined;
+  const total = await TeamCmsService.count({ q: query });
+  const { page: currentPage, skip, take } = paginationFromSearchParam(page, total, PAGE_SIZE);
+  const items = await TeamCmsService.list({ q: query, skip, take });
+
   const photoIds = [...new Set(items.map((i) => i.photoId).filter((x): x is string => !!x))];
   const photos = await MediaRepository.findManyById(photoIds);
   const photosById = new Map(photos.map((p) => [p.id, p]));
   const canWrite = session.permissions.includes("content:write");
+
+  function buildHref(nextPage: number): string {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (nextPage > 1) params.set("page", String(nextPage));
+    const qs = params.toString();
+    return qs ? `/admin/team?${qs}` : "/admin/team";
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -85,6 +106,8 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
         />
       )}
 
+      <ListToolbar placeholder="Cari nama / jabatan / bio…" />
+
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -100,8 +123,10 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
             {items.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  Belum ada anggota tim.{" "}
-                  {canWrite && (
+                  {query
+                    ? `Tidak ada anggota tim yang cocok dengan "${query}".`
+                    : "Belum ada anggota tim."}{" "}
+                  {canWrite && !query && (
                     <Link href="/admin/team/new" className="text-brand-orange-strong underline-offset-2 hover:underline">
                       Tambahkan anggota pertama
                     </Link>
@@ -142,8 +167,8 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
                       <TeamActionsRow
                         id={t.id}
                         name={t.name}
-                        isFirst={i === 0}
-                        isLast={i === items.length - 1}
+                        isFirst={i === 0 && currentPage === 1}
+                        isLast={i === items.length - 1 && currentPage * PAGE_SIZE >= total}
                         canWrite={canWrite}
                       />
                     </td>
@@ -154,6 +179,13 @@ export default async function TeamAdminPage({ searchParams }: { searchParams: Se
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={total}
+        buildHref={buildHref}
+      />
     </div>
   );
 }

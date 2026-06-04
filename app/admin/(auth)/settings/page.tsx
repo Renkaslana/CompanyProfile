@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { FormBanner } from "@/components/admin/admin-form";
 import { requirePermission } from "@/server/auth/guards";
 import { getSiteSettings } from "@/lib/data/settings";
+import { MediaService } from "@/server/services/media.service";
 import { SettingsForm } from "./settings-form";
 import { updateSettingsAction } from "./actions";
 
@@ -31,8 +32,21 @@ export default async function SettingsAdminPage({
   // form needs as initial state.
   const { values, ...company } = settings;
 
+  // Media assets for the Testimonials avatar picker (M10.1). Scope to the
+  // `team` folder to keep the picker focused on portrait-style assets, plus
+  // 120-row ceiling for parity with the news editor.
+  const assets = await MediaService.list({ folder: "team", limit: 120 });
+  const mediaAssets = assets.map((a) => ({
+    id: a.id,
+    url: a.url,
+    alt: a.alt,
+    title: a.title,
+    folder: a.folder,
+    tags: a.tags,
+  }));
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <header>
         <h1 className="font-display text-2xl font-bold text-ink-900">Pengaturan situs</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -68,6 +82,7 @@ export default async function SettingsAdminPage({
       <SettingsForm
         initialCompany={company}
         initialValues={values}
+        mediaAssets={mediaAssets}
         action={updateSettingsAction}
       />
     </div>
