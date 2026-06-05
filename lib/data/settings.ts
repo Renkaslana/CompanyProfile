@@ -16,6 +16,7 @@ import { COMPANY, VALUES } from "@/lib/constants";
 import type { CompanyJson, ValueItem } from "@/lib/validation/settings";
 
 type Testimonial = NonNullable<CompanyJson["testimonials"]>[number];
+type FaqItem = NonNullable<CompanyJson["faq"]>[number];
 
 /**
  * Final shape consumed by marketing pages. All keys are guaranteed to be
@@ -74,6 +75,31 @@ const DEFAULT_PRIVACY_POLICY =
   "<p>Untuk pertanyaan terkait kebijakan privasi, hubungi kami melalui kanal kontak resmi.</p>" +
   "<p><em>Versi awal — akan dilengkapi oleh tim legal.</em></p>";
 
+const DEFAULT_FAQ: FaqItem[] = [
+  {
+    question: "Layanan apa saja yang ditawarkan BMI?",
+    answer:
+      "Kami melayani jasa logistik, transportasi, rental kendaraan, dan perdagangan umum. Lihat halaman /layanan untuk detail setiap layanan.",
+  },
+  {
+    question: "Bagaimana cara meminta penawaran (quote)?",
+    answer:
+      "Anda dapat mengisi formulir di halaman /kontak, mengirim WhatsApp ke nomor support, atau menelepon kami pada jam operasional. Tim akan menghubungi balik dalam beberapa jam kerja.",
+  },
+  {
+    question: "Wilayah operasional BMI di mana saja?",
+    answer:
+      "BMI melayani pengiriman dan distribusi di seluruh Indonesia dengan jaringan armada tetap di kota-kota besar. Tanyakan rute spesifik Anda untuk estimasi lebih akurat.",
+  },
+  {
+    question: "Apakah BMI menerima pengiriman skala kecil (B2C)?",
+    answer:
+      "Fokus kami adalah B2B (perusahaan, retail, manufaktur). Untuk kebutuhan personal, kami sarankan menggunakan jasa kurir umum.",
+  },
+];
+
+const DEFAULT_SUPPORT_HOURS = "Senin–Sabtu 08.00–17.00 WIB";
+
 const DEFAULT_TERMS =
   "<p>Syarat dan ketentuan ini mengatur penggunaan situs web PT. Bintang Mulia Investama.</p>" +
   "<h2>Penggunaan situs</h2>" +
@@ -129,6 +155,8 @@ function withFallbacks(): SiteSettingsResolved {
     testimonials: DEFAULT_TESTIMONIALS,
     privacyPolicy: DEFAULT_PRIVACY_POLICY,
     termsAndConditions: DEFAULT_TERMS,
+    faq: DEFAULT_FAQ,
+    supportHours: DEFAULT_SUPPORT_HOURS,
     values: valuesAsItems(),
   };
 }
@@ -161,6 +189,14 @@ export async function getSiteSettings(): Promise<SiteSettingsResolved> {
     company.termsAndConditions && company.termsAndConditions.trim() !== ""
       ? company.termsAndConditions
       : fallback.termsAndConditions;
+  const faq =
+    Array.isArray(company.faq) && company.faq.length > 0
+      ? company.faq
+      : fallback.faq;
+  const supportHours =
+    company.supportHours && company.supportHours.trim() !== ""
+      ? company.supportHours
+      : fallback.supportHours;
 
   return {
     ...fallback,
@@ -173,6 +209,8 @@ export async function getSiteSettings(): Promise<SiteSettingsResolved> {
     testimonials,
     privacyPolicy,
     termsAndConditions,
+    faq,
+    supportHours,
     values,
   };
 }

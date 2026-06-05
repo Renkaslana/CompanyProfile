@@ -145,6 +145,39 @@ export const companyJsonSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  // ─ Support cleanup follow-up: FAQ + support hours ───────────────────
+  /**
+   * Lightweight FAQ — max 15 question/answer pairs surfaced on `/kontak#faq`
+   * and linked from the floating Support Widget. Answers can include light
+   * HTML; sanitized on render via `<SanitizedHtml>`.
+   */
+  faq: z
+    .array(
+      z.object({
+        question: shortString(5, 200, "Pertanyaan"),
+        answer: z
+          .string()
+          .trim()
+          .min(10, "Jawaban minimal 10 karakter.")
+          .max(2000, "Jawaban terlalu panjang."),
+      }),
+    )
+    .max(15, "Maksimum 15 pertanyaan.")
+    .optional()
+    .default([]),
+
+  /**
+   * Custom support availability text shown in the Support Widget header
+   * (e.g. "Senin–Sabtu 08.00–17.00 WIB"). Falls back to `operationalHours`
+   * when empty.
+   */
+  supportHours: z
+    .string()
+    .trim()
+    .max(160, "Teks jam support maksimum 160 karakter.")
+    .optional()
+    .or(z.literal("")),
+
   // Legal
   legal: z.object({
     entity: shortString(2, 100, "Bentuk badan"),

@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Clock, HelpCircle, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { LeadForm } from "@/features/leads/components/lead-form";
 import { Reveal } from "@/components/motion/reveal";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { getSiteSettings } from "@/lib/data";
 import { COMPANY } from "@/lib/constants";
 
@@ -150,6 +156,47 @@ export default async function KontakPage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ — anchored at #faq so the Support Widget can deep-link */}
+      {settings.faq && settings.faq.length > 0 && (
+        <section id="faq" className="scroll-mt-24 bg-background py-20 sm:py-24">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-orange/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-orange-strong">
+                <HelpCircle className="size-3.5" />
+                Pertanyaan Umum
+              </span>
+              <h2 className="mt-4 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
+                Sebelum menghubungi kami
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Jawaban singkat untuk pertanyaan yang paling sering ditanyakan
+                calon pelanggan kami.
+              </p>
+            </div>
+
+            <div className="mt-10 rounded-3xl border border-border bg-card p-2 shadow-sm sm:p-4">
+              <Accordion className="w-full">
+                {settings.faq.map((item, i) => (
+                  <AccordionItem key={i} value={`faq-${i}`} className="px-3">
+                    <AccordionTrigger className="text-base font-semibold text-ink-900 hover:no-underline">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4 text-sm leading-relaxed text-foreground/80">
+                      <p className="whitespace-pre-wrap">{item.answer}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              Tidak menemukan jawaban yang Anda cari? Gunakan formulir di atas
+              atau hubungi kami via WhatsApp / telepon.
+            </p>
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { WhatsAppButton } from "@/components/layout/whatsapp-button";
+import { SupportWidget } from "@/components/layout/support-widget";
 import { CookiesBanner } from "@/components/layout/cookies-banner";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteSettings } from "@/lib/data";
@@ -16,7 +16,12 @@ export default async function MarketingLayout({
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
-      <WhatsAppButton whatsapp={settings.whatsapp} />
+      <SupportWidget
+        whatsapp={settings.whatsapp}
+        phone={settings.phone}
+        email={settings.email}
+        supportHours={settings.supportHours ?? settings.operationalHours}
+      />
       <CookiesBanner />
       <Toaster position="top-center" richColors />
     </>

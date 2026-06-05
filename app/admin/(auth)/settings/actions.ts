@@ -26,7 +26,6 @@ function revalidatePublic() {
   revalidatePath("/tentang");
   revalidatePath("/kontak");
   revalidatePath("/karir");
-  revalidatePath("/bantuan");
   revalidatePath("/privasi");
   revalidatePath("/syarat-ketentuan");
 }

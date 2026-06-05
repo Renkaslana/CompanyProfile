@@ -38,6 +38,7 @@ const AUDIT_ENTITIES = [
   "Stat",
   "SiteSettings",
   "MediaAsset",
+  "Lead",
 ] as const;
 
 type SearchParams = Promise<{

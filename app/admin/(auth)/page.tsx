@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   Images,
   ImagePlus,
+  Inbox,
   Newspaper,
   Plus,
   ScrollText,
@@ -69,6 +70,7 @@ export default async function DashboardPage({
     auditCount,
     staleServiceDrafts,
     staleNewsDrafts,
+    newLeadCount,
     recentAudit,
     myActivity,
   ] = await Promise.all([
@@ -83,6 +85,7 @@ export default async function DashboardPage({
     db.auditLog.count(),
     db.service.count({ where: { published: false, updatedAt: { lt: SEVEN_DAYS_AGO() } } }),
     db.newsPost.count({ where: { status: "DRAFT", updatedAt: { lt: SEVEN_DAYS_AGO() } } }),
+    db.lead.count({ where: { status: "NEW" } }),
     db.auditLog.findMany({
       take: 8,
       orderBy: { createdAt: "desc" },
@@ -122,6 +125,7 @@ export default async function DashboardPage({
   ];
 
   const utilityCards = [
+    { label: "Permintaan baru", value: newLeadCount, icon: Inbox, href: "/admin/leads", perm: "lead:read" },
     { label: "Media Library", value: mediaCount, icon: ImagePlus, href: "/admin/media", perm: "media:create" },
     { label: "Pengguna admin", value: userCount, icon: Users, href: "/admin/users", perm: "users:manage" },
     { label: "Riwayat aktivitas", value: auditCount, icon: ScrollText, href: "/admin/audit", perm: "audit:read" },

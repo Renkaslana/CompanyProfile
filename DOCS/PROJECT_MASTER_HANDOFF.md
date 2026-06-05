@@ -5,10 +5,12 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of CMS UX/Usability pass — mobile nav drawer, friendly
-terminology (Indonesian), dashboard role description + Aktivitas Saya +
-Konten Menunggu Publikasi widgets, EmptyState primitive, Settings UI tabs,
-list-action consolidation, audit log humanization.
+Last update: end of Support cleanup band — Lead persistence (Phase 7
+brought forward to Phase 4), admin `/admin/leads` module, `/bantuan`
+retired with 301 to `/kontak`, SupportWidget (multi-channel floating
+popover) replaces the single WhatsApp button, FAQ accordion on `/kontak`
+with `#faq` anchor, Settings CMS tab "Layanan Pelanggan" (FAQ +
+supportHours).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -47,7 +49,8 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4, M5, M6, M7, M8, M9, M9.5, M10, M10.1–M10.4 + CMS UX usability pass (mobile nav, terminology, dashboard widgets, empty states, settings tabs, list action consolidation, audit humanization) done. M3 skipped. Remaining: M11 (verification + docs roll-up). |
+| CMS (Phase 4) | 🟡 In progress: M1, M2, M4–M10 + M10.1–M10.4 + CMS UX usability pass + Support cleanup (Lead persistence, /admin/leads, /bantuan retired, SupportWidget, FAQ on /kontak, Settings tab "Layanan Pelanggan") done. M3 skipped. Remaining: M11 (verification + docs roll-up). |
+| Lead persistence (was Phase 7) | ✅ Brought forward — public submit → DB via `submitLeadAction`, honeypot anti-spam, audit `LEAD_CREATE` with `actorId: "anonymous"`, admin list + detail + status workflow. Turnstile + per-IP rate limit still Phase 8. |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
 | Lead Management (Phase 7) | ⏳ Not started. |

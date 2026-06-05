@@ -84,6 +84,11 @@ const TABS = [
     sections: ["testimoni"],
   },
   {
+    id: "layanan-pelanggan",
+    label: "Layanan Pelanggan",
+    sections: ["support-hours", "faq"],
+  },
+  {
     id: "legal",
     label: "Legal & Halaman Kebijakan",
     sections: ["legal", "privasi", "syarat"],
@@ -226,6 +231,30 @@ export function SettingsForm({
     setCompany((p) => ({
       ...p,
       testimonials: (p.testimonials ?? []).filter((_, idx) => idx !== i),
+    }));
+
+  // ── FAQ helpers (support cleanup) ──────────────────────────────────
+  type FaqItemValue = NonNullable<CompanyJson["faq"]>[number];
+  const faqItems: FaqItemValue[] = company.faq ?? [];
+  const updateFaq = <K extends keyof FaqItemValue>(
+    i: number,
+    key: K,
+    v: FaqItemValue[K],
+  ) =>
+    setCompany((p) => {
+      const arr = [...(p.faq ?? [])];
+      arr[i] = { ...arr[i], [key]: v };
+      return { ...p, faq: arr };
+    });
+  const addFaq = () =>
+    setCompany((p) => ({
+      ...p,
+      faq: [...(p.faq ?? []), { question: "", answer: "" }],
+    }));
+  const removeFaq = (i: number) =>
+    setCompany((p) => ({
+      ...p,
+      faq: (p.faq ?? []).filter((_, idx) => idx !== i),
     }));
 
   const textareaCls =
@@ -588,6 +617,108 @@ export function SettingsForm({
                 {fieldErr(fe, "company.testimonials") && (
                   <p className="text-xs text-destructive">
                     {fieldErr(fe, "company.testimonials")}
+                  </p>
+                )}
+              </div>
+            </FormSection>
+          </div>
+
+          {/* ── Layanan Pelanggan: support hours (support cleanup) ─── */}
+          <div id="support-hours" className={cn("scroll-mt-24", !visibleSections.has("support-hours") && "hidden")}>
+            <FormSection
+              title="Jam Layanan Pelanggan"
+              description="Tampil di header Support Widget (tombol mengambang). Kosongkan untuk pakai Jam Operasional umum."
+            >
+              <FormField
+                label="Jam support (opsional)"
+                htmlFor="supportHours"
+                hint="Contoh: Senin–Sabtu 08.00–17.00 WIB"
+                error={fieldErr(fe, "company.supportHours")}
+              >
+                <Input
+                  id="supportHours"
+                  value={company.supportHours ?? ""}
+                  onChange={(e) => setField("supportHours", e.target.value)}
+                  placeholder="Senin–Sabtu 08.00–17.00 WIB"
+                  maxLength={160}
+                />
+              </FormField>
+            </FormSection>
+          </div>
+
+          {/* ── Layanan Pelanggan: FAQ repeater (support cleanup) ──── */}
+          <div id="faq" className={cn("scroll-mt-24", !visibleSections.has("faq") && "hidden")}>
+            <FormSection
+              title="Pertanyaan Umum (FAQ)"
+              description="Tampil di halaman /kontak (anchor #faq) dan di-link dari Support Widget. Maksimum 15 pertanyaan."
+            >
+              <div className="grid gap-3">
+                {faqItems.length === 0 && (
+                  <p className="text-sm italic text-muted-foreground">
+                    Belum ada FAQ. Tambahkan agar calon pelanggan dapat menemukan
+                    jawaban sebelum menghubungi tim Anda.
+                  </p>
+                )}
+                {faqItems.map((item, i) => (
+                  <div key={i} className="rounded-lg border border-border bg-card p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        FAQ #{i + 1}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="outline"
+                        onClick={() => removeFaq(i)}
+                        aria-label="Hapus FAQ"
+                        className="text-destructive"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                    <div className="grid gap-3">
+                      <Input
+                        placeholder="Pertanyaan (mis. Bagaimana cara meminta penawaran?)"
+                        value={item.question}
+                        onChange={(e) => updateFaq(i, "question", e.target.value)}
+                        maxLength={200}
+                      />
+                      {fieldErr(fe, `company.faq.${i}.question`) && (
+                        <p className="text-xs text-destructive">
+                          {fieldErr(fe, `company.faq.${i}.question`)}
+                        </p>
+                      )}
+                      <textarea
+                        placeholder="Jawaban singkat (10 – 2000 karakter). Boleh beberapa paragraf."
+                        value={item.answer}
+                        onChange={(e) => updateFaq(i, "answer", e.target.value)}
+                        rows={4}
+                        maxLength={2000}
+                        className={textareaCls}
+                      />
+                      {fieldErr(fe, `company.faq.${i}.answer`) && (
+                        <p className="text-xs text-destructive">
+                          {fieldErr(fe, `company.faq.${i}.answer`)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {faqItems.length < 15 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={addFaq}
+                    className="w-fit"
+                  >
+                    <Plus className="size-3.5" />
+                    Tambah FAQ
+                  </Button>
+                )}
+                {fieldErr(fe, "company.faq") && (
+                  <p className="text-xs text-destructive">
+                    {fieldErr(fe, "company.faq")}
                   </p>
                 )}
               </div>

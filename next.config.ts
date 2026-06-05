@@ -10,6 +10,24 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
   },
+
+  /**
+   * 301 redirects.
+   *
+   * /bantuan → /kontak — the placeholder "Bantuan" page was retired in the
+   * support-cleanup band; help flows now live on /kontak (FAQ section +
+   * contact form) plus the floating Support Widget. Preserve any inbound
+   * links (business cards, prior promo material) by redirecting permanently.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/bantuan",
+        destination: "/kontak",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

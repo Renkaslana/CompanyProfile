@@ -62,6 +62,11 @@ export const AUDIT_ACTIONS = {
   CLIENT_DELETE: "CLIENT_DELETE",
   STAT_UPDATE: "STAT_UPDATE",
   SETTINGS_UPDATE: "SETTINGS_UPDATE",
+
+  // Lead capture (support cleanup follow-up)
+  LEAD_CREATE: "LEAD_CREATE",
+  LEAD_STATUS_CHANGE: "LEAD_STATUS_CHANGE",
+  LEAD_DELETE: "LEAD_DELETE",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

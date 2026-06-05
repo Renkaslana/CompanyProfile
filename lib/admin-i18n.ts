@@ -42,6 +42,7 @@ export const ENTITY_LABEL: Record<string, string> = {
   Stat: "Statistik",
   SiteSettings: "Pengaturan situs",
   MediaAsset: "Media",
+  Lead: "Permintaan calon pelanggan",
 };
 
 /**
@@ -104,6 +105,11 @@ export const ACTION_LABEL: Record<string, string> = {
   CLIENT_DELETE: "Menghapus klien",
   STAT_UPDATE: "Memperbarui statistik",
   SETTINGS_UPDATE: "Memperbarui pengaturan situs",
+
+  // Leads
+  LEAD_CREATE: "Permintaan baru masuk",
+  LEAD_STATUS_CHANGE: "Mengubah status permintaan",
+  LEAD_DELETE: "Menghapus permintaan",
 };
 
 /**
