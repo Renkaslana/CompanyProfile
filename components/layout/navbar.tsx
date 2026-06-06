@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Headphones, Menu, Phone } from "lucide-react";
+import { Menu, Phone, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Logo } from "@/components/layout/logo";
@@ -89,7 +89,6 @@ export function Navbar({ support }: SupportProps = {}) {
               whatsapp={support.whatsapp}
               phone={support.phone}
               email={support.email}
-              supportHours={support.supportHours}
               triggerClassName={cn(
                 "hidden sm:inline-flex",
                 scrolled
@@ -98,8 +97,8 @@ export function Navbar({ support }: SupportProps = {}) {
               )}
               triggerLabel={
                 <>
-                  <Headphones className="size-4" />
-                  Bantuan
+                  <Sparkles className="size-4" />
+                  Tanya BMI
                 </>
               }
             />
@@ -160,12 +159,11 @@ export function Navbar({ support }: SupportProps = {}) {
                     whatsapp={support.whatsapp}
                     phone={support.phone}
                     email={support.email}
-                    supportHours={support.supportHours}
-                    triggerClassName="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+                          triggerClassName="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
                     triggerLabel={
                       <>
-                        <Headphones className="size-4" />
-                        Bantuan
+                        <Sparkles className="size-4" />
+                        Tanya BMI
                       </>
                     }
                   />

@@ -146,4 +146,14 @@
     background-clip: text;
     color: transparent;
   }
+
+  /* Tanya BMI panel — typing indicator dot.
+     Subtle opacity wave (not bounce) to keep motion calm + professional. */
+  @keyframes typing-dot {
+    0%, 60%, 100% { opacity: 0.25; }
+    30%           { opacity: 1; }
+  }
+  .animate-typing-dot {
+    animation: typing-dot 1.1s ease-in-out infinite;
+  }
 }

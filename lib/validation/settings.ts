@@ -33,7 +33,11 @@ export const SUPPORT_TOPICS = [
 
 export type SupportTopic = (typeof SUPPORT_TOPICS)[number];
 
-/** Indonesian chip + heading labels for each topic. */
+/**
+ * **Admin-facing** label — shown in the Settings form topic dropdown when an
+ * editor assigns an FAQ entry to a category. Kept in noun-phrase form so it
+ * reads as a *category*, not a question.
+ */
 export const SUPPORT_TOPIC_LABEL: Record<SupportTopic, string> = {
   CARA_MEMESAN: "Cara Memesan",
   LAYANAN: "Layanan yang Tersedia",
@@ -44,6 +48,40 @@ export const SUPPORT_TOPIC_LABEL: Record<SupportTopic, string> = {
   KERJA_SAMA_BISNIS: "Kerja Sama Bisnis",
   KARIR: "Karir",
   KONTAK_PERUSAHAAN: "Kontak Perusahaan",
+};
+
+/**
+ * **Visitor-facing** label — shown in the Tanya BMI panel as topic chips
+ * and as the user-bubble text after selection. In conversational question
+ * form so the panel feels like a chat, not a category list.
+ */
+export const SUPPORT_TOPIC_QUESTION: Record<SupportTopic, string> = {
+  CARA_MEMESAN: "Bagaimana cara memesan layanan?",
+  LAYANAN: "Layanan apa saja yang tersedia?",
+  WILAYAH_OPERASIONAL: "Wilayah operasional BMI di mana?",
+  HARGA_PENAWARAN: "Bagaimana cara meminta penawaran?",
+  ARMADA_TRANSPORTASI: "Armada apa saja yang tersedia?",
+  RENTAL_KENDARAAN: "Apakah ada layanan rental kendaraan?",
+  KERJA_SAMA_BISNIS: "Bagaimana model kerja sama bisnis?",
+  KARIR: "Bagaimana cara melamar pekerjaan?",
+  KONTAK_PERUSAHAAN: "Bagaimana cara menghubungi BMI?",
+};
+
+/**
+ * After an answer is shown, render these 2–3 topics as "related question"
+ * chips so visitors can explore without bouncing back to the main grid.
+ * Curated by topical adjacency — not algorithmic.
+ */
+export const SUPPORT_TOPIC_RELATED: Record<SupportTopic, SupportTopic[]> = {
+  CARA_MEMESAN: ["HARGA_PENAWARAN", "LAYANAN", "KONTAK_PERUSAHAAN"],
+  LAYANAN: ["ARMADA_TRANSPORTASI", "RENTAL_KENDARAAN", "HARGA_PENAWARAN"],
+  WILAYAH_OPERASIONAL: ["ARMADA_TRANSPORTASI", "HARGA_PENAWARAN", "CARA_MEMESAN"],
+  HARGA_PENAWARAN: ["CARA_MEMESAN", "LAYANAN", "KONTAK_PERUSAHAAN"],
+  ARMADA_TRANSPORTASI: ["WILAYAH_OPERASIONAL", "RENTAL_KENDARAAN", "HARGA_PENAWARAN"],
+  RENTAL_KENDARAAN: ["ARMADA_TRANSPORTASI", "HARGA_PENAWARAN", "KERJA_SAMA_BISNIS"],
+  KERJA_SAMA_BISNIS: ["LAYANAN", "HARGA_PENAWARAN", "KONTAK_PERUSAHAAN"],
+  KARIR: ["KONTAK_PERUSAHAAN", "LAYANAN"],
+  KONTAK_PERUSAHAAN: ["CARA_MEMESAN", "HARGA_PENAWARAN"],
 };
 
 /* ─── Reusable field rules with Indonesian messages ────────────────── */

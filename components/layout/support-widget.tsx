@@ -67,7 +67,7 @@ export function SupportWidget({
         className={cn(
           "fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-3 font-medium text-white shadow-xl shadow-brand-orange/30 ring-1 ring-brand-orange-strong/40 transition-transform hover:scale-105 hover:bg-brand-orange-strong sm:bottom-6 sm:right-6",
         )}
-        aria-label="Buka pusat bantuan & kontak"
+        aria-label="Buka kontak cepat (WhatsApp, telepon, email)"
       >
         {open ? (
           <X className="size-5" />
@@ -75,7 +75,7 @@ export function SupportWidget({
           <Headphones className="size-5" />
         )}
         <span className="hidden text-sm sm:inline">
-          {open ? "Tutup" : "Hubungi Kami"}
+          {open ? "Tutup" : "Chat Cepat"}
         </span>
       </BasePopover.Trigger>
 
@@ -94,7 +94,7 @@ export function SupportWidget({
             <header className="flex items-start justify-between gap-3">
               <div>
                 <BasePopover.Title className="font-display text-base font-semibold text-ink-900">
-                  Tim Support BMI
+                  Hubungi Tim BMI
                 </BasePopover.Title>
                 {supportHours && (
                   <p className="mt-0.5 text-xs text-muted-foreground">
