@@ -5,12 +5,11 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: end of Support cleanup band — Lead persistence (Phase 7
-brought forward to Phase 4), admin `/admin/leads` module, `/bantuan`
-retired with 301 to `/kontak`, SupportWidget (multi-channel floating
-popover) replaces the single WhatsApp button, FAQ accordion on `/kontak`
-with `#faq` anchor, Settings CMS tab "Layanan Pelanggan" (FAQ +
-supportHours).
+Last update: Customer Support guided panel — new header "Bantuan" trigger
+beside "Hubungi Kami" opens a chat-style click-only Q&A panel reading
+from `settings.faq[]` grouped by `topic` (9 fixed topics). Floating
+SupportWidget at bottom-right unchanged. `/kontak` traditional FAQ
+accordion retired (panel replaces it).
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---

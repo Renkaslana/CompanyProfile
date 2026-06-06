@@ -11,16 +11,25 @@ export default async function MarketingLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSiteSettings();
+  const supportHours = settings.supportHours ?? settings.operationalHours;
   return (
     <>
-      <Navbar />
+      <Navbar
+        support={{
+          faq: settings.faq ?? [],
+          whatsapp: settings.whatsapp,
+          phone: settings.phone,
+          email: settings.email,
+          supportHours,
+        }}
+      />
       <main className="flex-1">{children}</main>
       <Footer />
       <SupportWidget
         whatsapp={settings.whatsapp}
         phone={settings.phone}
         email={settings.email}
-        supportHours={settings.supportHours ?? settings.operationalHours}
+        supportHours={supportHours}
       />
       <CookiesBanner />
       <Toaster position="top-center" richColors />

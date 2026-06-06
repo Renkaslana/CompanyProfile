@@ -77,24 +77,58 @@ const DEFAULT_PRIVACY_POLICY =
 
 const DEFAULT_FAQ: FaqItem[] = [
   {
-    question: "Layanan apa saja yang ditawarkan BMI?",
+    topic: "CARA_MEMESAN",
+    question: "Bagaimana cara memesan layanan BMI?",
     answer:
-      "Kami melayani jasa logistik, transportasi, rental kendaraan, dan perdagangan umum. Lihat halaman /layanan untuk detail setiap layanan.",
+      "Cukup tiga langkah: (1) sampaikan kebutuhan Anda lewat WhatsApp, telepon, atau formulir di halaman Kontak; (2) tim kami menghubungi balik dalam beberapa jam kerja dengan estimasi harga & jadwal; (3) setelah disepakati, pengiriman dijadwalkan dan Anda menerima konfirmasi. Tidak ada akun atau registrasi yang perlu dibuat — cukup ceritakan kebutuhan Anda.",
   },
   {
-    question: "Bagaimana cara meminta penawaran (quote)?",
+    topic: "LAYANAN",
+    question: "Layanan apa saja yang tersedia di BMI?",
     answer:
-      "Anda dapat mengisi formulir di halaman /kontak, mengirim WhatsApp ke nomor support, atau menelepon kami pada jam operasional. Tim akan menghubungi balik dalam beberapa jam kerja.",
+      "Empat lini utama: Jasa Logistik (distribusi & gudang), Transportasi (armada darat seluruh Indonesia), Rental Kendaraan (operasional & dinas), serta Perdagangan Umum. Detail tiap layanan ada di halaman Layanan.",
   },
   {
-    question: "Wilayah operasional BMI di mana saja?",
+    topic: "WILAYAH_OPERASIONAL",
+    question: "Wilayah operasional BMI mencakup mana saja?",
     answer:
-      "BMI melayani pengiriman dan distribusi di seluruh Indonesia dengan jaringan armada tetap di kota-kota besar. Tanyakan rute spesifik Anda untuk estimasi lebih akurat.",
+      "BMI melayani pengiriman dan distribusi di seluruh Indonesia dengan jaringan armada tetap di kota-kota besar (Jabodetabek, Bandung, Semarang, Surabaya, Medan, Makassar, dan lainnya). Sampaikan rute spesifik Anda lewat WhatsApp atau formulir kontak untuk estimasi lebih akurat.",
   },
   {
-    question: "Apakah BMI menerima pengiriman skala kecil (B2C)?",
+    topic: "HARGA_PENAWARAN",
+    question: "Bagaimana cara mendapatkan penawaran harga?",
     answer:
-      "Fokus kami adalah B2B (perusahaan, retail, manufaktur). Untuk kebutuhan personal, kami sarankan menggunakan jasa kurir umum.",
+      "Harga sangat bergantung pada rute, volume, jenis muatan, dan tingkat layanan yang Anda butuhkan. Untuk mendapat penawaran resmi, mohon sampaikan detail berikut: titik asal & tujuan, perkiraan volume/tonase, jenis muatan, dan frekuensi pengiriman. Tim sales kami akan kembali dalam jam kerja yang sama.",
+  },
+  {
+    topic: "ARMADA_TRANSPORTASI",
+    question: "Armada seperti apa yang dimiliki BMI?",
+    answer:
+      "Armada BMI terdiri dari pickup, CDD, CDE, tronton, hingga fuso, semua dengan dokumen resmi, pengemudi bersertifikat, dan sistem pemantauan operasional. Untuk muatan khusus (suhu terkontrol, berbahaya, oversize), kami siapkan armada yang sesuai.",
+  },
+  {
+    topic: "RENTAL_KENDARAAN",
+    question: "Apakah BMI menyewakan kendaraan untuk operasional perusahaan?",
+    answer:
+      "Ya. Layanan rental kami mencakup kendaraan operasional (Avanza/Innova/Hilux), kendaraan eksekutif (Fortuner/Pajero/Alphard), serta armada angkutan harian/mingguan/bulanan, dengan opsi sopir. Cocok untuk dinas luar kota, antar-jemput tamu perusahaan, atau penggantian armada sementara.",
+  },
+  {
+    topic: "KERJA_SAMA_BISNIS",
+    question: "Apakah BMI terbuka untuk kerja sama bisnis (B2B)?",
+    answer:
+      "Tentu. Kami terbuka untuk kontrak distribusi jangka panjang, kerja sama pergudangan, kemitraan armada, dan pengadaan rutin. Untuk diskusi lebih lanjut, mohon hubungi kami via WhatsApp atau kirim profil singkat perusahaan Anda lewat formulir kontak — tim Business Development akan menindaklanjuti.",
+  },
+  {
+    topic: "KARIR",
+    question: "Bagaimana cara melamar pekerjaan di BMI?",
+    answer:
+      "Seluruh lowongan aktif kami tersedia di halaman Karir. Anda dapat melihat detail posisi, kualifikasi, dan tata cara melamar di sana. Kami menerima lamaran sopir, helper, admin operasional, sales, hingga posisi manajerial.",
+  },
+  {
+    topic: "KONTAK_PERUSAHAAN",
+    question: "Bagaimana cara menghubungi BMI?",
+    answer:
+      "WhatsApp adalah kanal tercepat. Anda juga bisa menelepon di jam kantor atau mengirim email untuk kebutuhan yang memerlukan dokumen tertulis. Alamat kantor dan detail lengkap tersedia di halaman Kontak.",
   },
 ];
 

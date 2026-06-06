@@ -11,6 +11,41 @@
 import { z } from "zod";
 import { mediaAssetId } from "./common";
 
+/* ─── Customer Support guided panel topics ─────────────────────────── */
+
+/**
+ * Fixed taxonomy of topics surfaced as chips inside the guided Customer
+ * Support panel. Adding a new topic = append here + add a label in
+ * `SUPPORT_TOPIC_LABEL` below. Removing or renaming is a breaking change for
+ * existing FAQ rows (Zod will reject persisted JSON with an unknown topic).
+ */
+export const SUPPORT_TOPICS = [
+  "CARA_MEMESAN",
+  "LAYANAN",
+  "WILAYAH_OPERASIONAL",
+  "HARGA_PENAWARAN",
+  "ARMADA_TRANSPORTASI",
+  "RENTAL_KENDARAAN",
+  "KERJA_SAMA_BISNIS",
+  "KARIR",
+  "KONTAK_PERUSAHAAN",
+] as const;
+
+export type SupportTopic = (typeof SUPPORT_TOPICS)[number];
+
+/** Indonesian chip + heading labels for each topic. */
+export const SUPPORT_TOPIC_LABEL: Record<SupportTopic, string> = {
+  CARA_MEMESAN: "Cara Memesan",
+  LAYANAN: "Layanan yang Tersedia",
+  WILAYAH_OPERASIONAL: "Wilayah Operasional",
+  HARGA_PENAWARAN: "Harga & Penawaran",
+  ARMADA_TRANSPORTASI: "Armada & Transportasi",
+  RENTAL_KENDARAAN: "Rental Kendaraan",
+  KERJA_SAMA_BISNIS: "Kerja Sama Bisnis",
+  KARIR: "Karir",
+  KONTAK_PERUSAHAAN: "Kontak Perusahaan",
+};
+
 /* ─── Reusable field rules with Indonesian messages ────────────────── */
 
 const shortString = (min: number, max: number, label: string) =>
@@ -147,13 +182,14 @@ export const companyJsonSchema = z.object({
 
   // ─ Support cleanup follow-up: FAQ + support hours ───────────────────
   /**
-   * Lightweight FAQ — max 15 question/answer pairs surfaced on `/kontak#faq`
-   * and linked from the floating Support Widget. Answers can include light
-   * HTML; sanitized on render via `<SanitizedHtml>`.
+   * Lightweight FAQ — max 15 question/answer pairs powering the guided
+   * Customer Support panel (triggered from the header). Items are grouped by
+   * `topic` at render time. Answers are plain text (no HTML).
    */
   faq: z
     .array(
       z.object({
+        topic: z.enum(SUPPORT_TOPICS).default("KONTAK_PERUSAHAAN"),
         question: shortString(5, 200, "Pertanyaan"),
         answer: z
           .string()

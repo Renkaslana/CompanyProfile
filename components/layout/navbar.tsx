@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Phone } from "lucide-react";
+import { Headphones, Menu, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Logo } from "@/components/layout/logo";
@@ -15,8 +15,23 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  CustomerSupportPanel,
+} from "@/components/layout/customer-support-panel";
+import type { SupportTopic } from "@/lib/validation/settings";
 
-export function Navbar() {
+type SupportProps = {
+  /** Contact channels + guided FAQ pulled from SiteSettings by the layout. */
+  support?: {
+    faq: Array<{ topic: SupportTopic; question: string; answer: string }>;
+    whatsapp: string;
+    phone: string;
+    email: string;
+    supportHours?: string;
+  };
+};
+
+export function Navbar({ support }: SupportProps = {}) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -65,6 +80,30 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Customer Support guided panel — entry point #1 (header). The
+              floating bottom-right widget remains the secondary always-visible
+              entry. */}
+          {support && (
+            <CustomerSupportPanel
+              faq={support.faq}
+              whatsapp={support.whatsapp}
+              phone={support.phone}
+              email={support.email}
+              supportHours={support.supportHours}
+              triggerClassName={cn(
+                "hidden sm:inline-flex",
+                scrolled
+                  ? "text-foreground/80 hover:bg-accent hover:text-foreground"
+                  : "text-white/85 hover:bg-white/10 hover:text-white",
+              )}
+              triggerLabel={
+                <>
+                  <Headphones className="size-4" />
+                  Bantuan
+                </>
+              }
+            />
+          )}
           <Button
             render={<Link href="/kontak" />}
             className="hidden bg-brand-orange text-white hover:bg-brand-orange-strong sm:inline-flex"
@@ -114,7 +153,23 @@ export function Navbar() {
                   </Link>
                 ))}
               </nav>
-              <div className="px-6 pt-2">
+              <div className="space-y-2 px-6 pt-2">
+                {support && (
+                  <CustomerSupportPanel
+                    faq={support.faq}
+                    whatsapp={support.whatsapp}
+                    phone={support.phone}
+                    email={support.email}
+                    supportHours={support.supportHours}
+                    triggerClassName="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+                    triggerLabel={
+                      <>
+                        <Headphones className="size-4" />
+                        Bantuan
+                      </>
+                    }
+                  />
+                )}
                 <Button
                   render={<Link href="/kontak" onClick={() => setOpen(false)} />}
                   className="w-full bg-brand-orange text-white hover:bg-brand-orange-strong"

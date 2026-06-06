@@ -35,10 +35,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type {
-  CompanyJson,
-  SettingsFormState,
-  ValueItem,
+import {
+  SUPPORT_TOPICS,
+  SUPPORT_TOPIC_LABEL,
+  type CompanyJson,
+  type SettingsFormState,
+  type ValueItem,
 } from "@/lib/validation/settings";
 
 type Testimonial = NonNullable<CompanyJson["testimonials"]>[number];
@@ -249,7 +251,10 @@ export function SettingsForm({
   const addFaq = () =>
     setCompany((p) => ({
       ...p,
-      faq: [...(p.faq ?? []), { question: "", answer: "" }],
+      faq: [
+        ...(p.faq ?? []),
+        { topic: "KONTAK_PERUSAHAAN", question: "", answer: "" },
+      ],
     }));
   const removeFaq = (i: number) =>
     setCompany((p) => ({
@@ -677,6 +682,24 @@ export function SettingsForm({
                       </Button>
                     </div>
                     <div className="grid gap-3">
+                      <div className="grid gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Topik
+                        </label>
+                        <select
+                          value={item.topic ?? "KONTAK_PERUSAHAAN"}
+                          onChange={(e) =>
+                            updateFaq(i, "topic", e.target.value as typeof SUPPORT_TOPICS[number])
+                          }
+                          className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+                        >
+                          {SUPPORT_TOPICS.map((t) => (
+                            <option key={t} value={t}>
+                              {SUPPORT_TOPIC_LABEL[t]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <Input
                         placeholder="Pertanyaan (mis. Bagaimana cara meminta penawaran?)"
                         value={item.question}

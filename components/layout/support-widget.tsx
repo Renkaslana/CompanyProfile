@@ -25,7 +25,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Popover as BasePopover } from "@base-ui/react/popover";
 import {
-  HelpCircle,
   Headphones,
   Mail,
   MessageCircle,
@@ -192,14 +191,6 @@ export function SupportWidget({
               </Link>
             </div>
 
-            <Link
-              href="/kontak#faq"
-              onClick={() => setOpen(false)}
-              className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-ink-900"
-            >
-              <HelpCircle className="size-3.5" />
-              Lihat pertanyaan umum
-            </Link>
           </BasePopover.Popup>
         </BasePopover.Positioner>
       </BasePopover.Portal>
