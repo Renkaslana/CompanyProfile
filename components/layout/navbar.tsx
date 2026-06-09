@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Phone, Sparkles } from "lucide-react";
+import { Menu, MessageSquareText, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Logo } from "@/components/layout/logo";
@@ -27,7 +27,6 @@ type SupportProps = {
     whatsapp: string;
     phone: string;
     email: string;
-    supportHours?: string;
   };
 };
 
@@ -97,7 +96,7 @@ export function Navbar({ support }: SupportProps = {}) {
               )}
               triggerLabel={
                 <>
-                  <Sparkles className="size-4" />
+                  <MessageSquareText className="size-4" />
                   Tanya BMI
                 </>
               }
@@ -162,7 +161,7 @@ export function Navbar({ support }: SupportProps = {}) {
                           triggerClassName="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
                     triggerLabel={
                       <>
-                        <Sparkles className="size-4" />
+                        <MessageSquareText className="size-4" />
                         Tanya BMI
                       </>
                     }

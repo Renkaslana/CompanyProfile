@@ -31,7 +31,7 @@ import {
   MessageCircle,
   Phone,
   Send,
-  Sparkles,
+  MessageSquareText,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -196,7 +196,7 @@ export function CustomerSupportPanel({
       >
         {triggerLabel ?? (
           <>
-            <Sparkles className="size-4" />
+            <MessageSquareText className="size-4" />
             Tanya BMI
           </>
         )}
@@ -226,7 +226,7 @@ export function CustomerSupportPanel({
           <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border bg-ink-950 px-5 py-4 text-white">
             <div className="flex items-start gap-3">
               <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-orange text-white">
-                <Sparkles className="size-4" />
+                <MessageSquareText className="size-4" />
               </span>
               <div className="min-w-0">
                 <BaseDialog.Title
@@ -427,7 +427,7 @@ function BotBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-3 flex items-start gap-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300">
       <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-orange/10 text-brand-orange-strong">
-        <Sparkles className="size-3.5" />
+        <MessageSquareText className="size-3.5" />
       </span>
       <div className="max-w-[90%] rounded-2xl rounded-tl-sm bg-card px-3.5 py-2.5 text-sm leading-relaxed text-foreground/85 shadow-sm ring-1 ring-border">
         {children}
@@ -459,7 +459,7 @@ function TypingBubble() {
       className="mt-3 flex items-start gap-2 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
     >
       <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-orange/10 text-brand-orange-strong">
-        <Sparkles className="size-3.5" />
+        <MessageSquareText className="size-3.5" />
       </span>
       <div className="rounded-2xl rounded-tl-sm bg-card px-3.5 py-3 shadow-sm ring-1 ring-border">
         <span className="flex items-center gap-1.5">
