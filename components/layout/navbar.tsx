@@ -78,10 +78,9 @@ export function Navbar({ support }: SupportProps = {}) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          {/* Customer Support guided panel — entry point #1 (header). The
-              floating bottom-right widget remains the secondary always-visible
-              entry. */}
+        <div className="flex items-center gap-3">
+          {/* Tanya BMI guided information panel — secondary CTA, ghost styling
+              so the primary Hubungi Kami stays visually dominant. */}
           {support && (
             <CustomerSupportPanel
               faq={support.faq}

@@ -68,6 +68,28 @@ export const SUPPORT_TOPIC_QUESTION: Record<SupportTopic, string> = {
 };
 
 /**
+ * Per-topic primary action — a contextual CTA shown above the generic
+ * WhatsApp/Phone/Email channels card in the Tanya BMI panel. Routes visitors
+ * to the most relevant internal page for that topic (Layanan / Karir /
+ * Kontak / Tentang). Static map, not CMS-editable — keeps content surface
+ * minimal and avoids drift.
+ */
+export const SUPPORT_TOPIC_CTA: Record<
+  SupportTopic,
+  { label: string; href: string } | null
+> = {
+  CARA_MEMESAN:        { label: "Lihat Semua Layanan", href: "/layanan" },
+  LAYANAN:             { label: "Lihat Semua Layanan", href: "/layanan" },
+  WILAYAH_OPERASIONAL: { label: "Tentang BMI",         href: "/tentang" },
+  HARGA_PENAWARAN:     { label: "Minta Penawaran",     href: "/kontak"  },
+  ARMADA_TRANSPORTASI: { label: "Lihat Layanan",       href: "/layanan" },
+  RENTAL_KENDARAAN:    { label: "Lihat Layanan",       href: "/layanan" },
+  KERJA_SAMA_BISNIS:   { label: "Hubungi Tim Bisnis",  href: "/kontak"  },
+  KARIR:               { label: "Lihat Lowongan",      href: "/karir"   },
+  KONTAK_PERUSAHAAN:   { label: "Halaman Kontak",      href: "/kontak"  },
+};
+
+/**
  * After an answer is shown, render these 2–3 topics as "related question"
  * chips so visitors can explore without bouncing back to the main grid.
  * Curated by topical adjacency — not algorithmic.

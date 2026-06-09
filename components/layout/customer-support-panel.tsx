@@ -37,6 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   SUPPORT_TOPICS,
+  SUPPORT_TOPIC_CTA,
   SUPPORT_TOPIC_QUESTION,
   SUPPORT_TOPIC_RELATED,
   type SupportTopic,
@@ -64,9 +65,9 @@ type Props = {
  *  to feel like waiting. */
 const TYPING_MS = 550;
 
-/** Header subtitle — sets visitor expectations the moment the panel opens. */
+/** Header subtitle — short and scannable; fits ~2 lines in the panel header. */
 const PANEL_SUBTITLE =
-  "Temukan jawaban cepat tentang layanan, armada, wilayah operasional, penawaran, dan kerja sama bisnis BMI.";
+  "Jawaban cepat seputar layanan, armada, dan kerja sama bisnis BMI.";
 
 const BOT_GREETING = "Halo! Apa yang ingin Anda ketahui tentang BMI?";
 
@@ -222,11 +223,11 @@ export function CustomerSupportPanel({
           )}
           aria-labelledby="tanya-bmi-title"
         >
-          {/* Header */}
-          <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border bg-ink-950 px-5 py-4 text-white">
-            <div className="flex items-start gap-3">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-orange text-white">
-                <MessageSquareText className="size-4" />
+          {/* Header — compact density to keep visual focus on the conversation */}
+          <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border bg-ink-950 px-5 py-3 text-white">
+            <div className="flex items-start gap-2.5">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-orange text-white">
+                <MessageSquareText className="size-3.5" />
               </span>
               <div className="min-w-0">
                 <BaseDialog.Title
@@ -235,13 +236,13 @@ export function CustomerSupportPanel({
                 >
                   Tanya BMI
                 </BaseDialog.Title>
-                <p className="mt-1 text-[11px] leading-relaxed text-white/65">
+                <p className="mt-0.5 text-[11px] leading-snug text-white/65">
                   {PANEL_SUBTITLE}
                 </p>
               </div>
             </div>
             <BaseDialog.Close
-              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-white/70 hover:bg-white/10 hover:text-white"
+              className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-white/70 hover:bg-white/10 hover:text-white"
               aria-label="Tutup panel Tanya BMI"
             >
               <X className="size-4" />
@@ -297,12 +298,12 @@ export function CustomerSupportPanel({
                 {view.kind === "answer" && currentItem && (
                   <>
                     <BotBubble key={`a-${view.topic}-${view.itemIndex}`}>
-                      <p className="whitespace-pre-wrap">{currentItem.answer}</p>
+                      {renderAnswer(currentItem.answer)}
                     </BotBubble>
 
                     {/* Related questions */}
                     {relatedTopics.length > 0 && (
-                      <div className="mt-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:delay-100">
+                      <div className="mt-5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:delay-100">
                         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                           Pertanyaan lain yang sering ditanyakan
                         </p>
@@ -322,10 +323,28 @@ export function CustomerSupportPanel({
                       </div>
                     )}
 
-                    {/* Terminal CTAs */}
-                    <div className="mt-4 rounded-xl border border-border bg-card p-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300 motion-safe:delay-150">
+                    {/* Contextual CTA + terminal channels card */}
+                    <div className="mt-5 rounded-xl border border-border bg-card p-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300 motion-safe:delay-150">
+                      {/* Contextual primary action — routes to relevant page */}
+                      {SUPPORT_TOPIC_CTA[view.topic] && (
+                        <>
+                          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                            Langkah selanjutnya
+                          </p>
+                          <Link
+                            href={SUPPORT_TOPIC_CTA[view.topic]!.href}
+                            onClick={() => handleOpenChange(false)}
+                            className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-brand-orange/30 bg-brand-orange/5 px-3 py-2.5 text-sm font-semibold text-brand-orange-strong transition-colors hover:border-brand-orange/60 hover:bg-brand-orange/10"
+                          >
+                            <span>{SUPPORT_TOPIC_CTA[view.topic]!.label}</span>
+                            <ChevronLeft className="size-4 -rotate-180" />
+                          </Link>
+                          <div className="my-3 border-t border-dashed border-border" />
+                        </>
+                      )}
+
                       <p className="text-xs font-medium text-muted-foreground">
-                        Butuh diskusi langsung dengan tim kami?
+                        Atau diskusi langsung dengan tim kami:
                       </p>
                       <div className="mt-2 grid gap-2 sm:grid-cols-3">
                         {waHref && (
@@ -425,7 +444,7 @@ function TopicGrid({
 
 function BotBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 flex items-start gap-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300">
+    <div className="mt-4 flex items-start gap-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300">
       <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-orange/10 text-brand-orange-strong">
         <MessageSquareText className="size-3.5" />
       </span>
@@ -438,7 +457,7 @@ function BotBubble({ children }: { children: React.ReactNode }) {
 
 function UserBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 flex justify-end motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300">
+    <div className="mt-4 flex justify-end motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300">
       <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-brand-orange px-3.5 py-2 text-sm font-medium text-white shadow-sm">
         {children}
       </div>
@@ -474,6 +493,48 @@ function TypingBubble() {
           />
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Render an answer string with light structure. Splits on blank lines into
+ * paragraph blocks. Lines starting with `• `, `- ` or `* ` are treated as
+ * bullets and grouped into a `<ul>` with a brand-orange dot — but ONLY when
+ * every line in the block is a bullet line. Mixed blocks fall back to a
+ * `<p whitespace-pre-wrap>` so existing CMS content without bullet markers
+ * still renders without regression.
+ */
+function renderAnswer(text: string): React.ReactNode {
+  const paragraphs = text.split(/\n{2,}/);
+  return (
+    <div className="space-y-3 text-sm leading-relaxed text-foreground/85">
+      {paragraphs.map((para, pIdx) => {
+        const lines = para.split("\n").filter((l) => l.trim().length > 0);
+        if (lines.length === 0) return null;
+        const isAllBullets =
+          lines.length >= 2 && lines.every((l) => /^\s*[•\-*]\s+/.test(l));
+        if (isAllBullets) {
+          return (
+            <ul key={pIdx} className="grid gap-1.5">
+              {lines.map((line, lIdx) => (
+                <li key={lIdx} className="flex items-start gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-orange"
+                  />
+                  <span>{line.replace(/^\s*[•\-*]\s+/, "")}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={pIdx} className="whitespace-pre-wrap">
+            {para}
+          </p>
+        );
+      })}
     </div>
   );
 }
