@@ -5,11 +5,11 @@ read **standalone** — no prior conversation, no transcript, no other documents
 required to understand where the project stands and what to do next. All other
 docs in `DOCS/*` are referenced where deeper detail is needed.
 
-Last update: Customer Support guided panel — new header "Bantuan" trigger
-beside "Hubungi Kami" opens a chat-style click-only Q&A panel reading
-from `settings.faq[]` grouped by `topic` (9 fixed topics). Floating
-SupportWidget at bottom-right unchanged. `/kontak` traditional FAQ
-accordion retired (panel replaces it).
+Last update: **Phase 4 M11 verification — Phase 4 CMS formally closed
+(`v0.4.0`).** Static checks green (tsc/lint/build), RBAC matrix sweep
+(every entry point guarded; UserService relies on page+action
+`users:manage` guards — no exposure), audit-write coverage confirmed 100%
+across all 11 services. Next: pre-deploy hardening band → Phase 10 deploy.
 Repository root: `C:\Project\Company-Profile-BMI`.
 
 ---
@@ -48,7 +48,7 @@ CMS** — a single Next.js application that:
 | Backend infrastructure (Phase 1) | ✅ Complete: Prisma + Neon + env validation + server skeleton + seed. |
 | Data layer swap (Phase 2) | ✅ Complete: `lib/data` is DB-backed; frontend behaviour preserved. |
 | Auth + RBAC (Phase 3) | ✅ Complete: Auth.js v5 + JWT, login, password setup/reset, dashboard, users, audit. |
-| CMS (Phase 4) | 🟡 In progress: M1, M2, M4–M10 + M10.1–M10.4 + CMS UX usability pass + Support cleanup (Lead persistence, /admin/leads, /bantuan retired, SupportWidget, FAQ on /kontak, Settings tab "Layanan Pelanggan") done. M3 skipped. Remaining: M11 (verification + docs roll-up). |
+| CMS (Phase 4) | ✅ Complete (`v0.4.0`): M1, M2, M4–M10 + M10.1–M10.4 + CMS UX usability pass + Support cleanup + Tanya BMI guided panel + M11 verification. M3 skipped (→ Phase 8). |
 | Lead persistence (was Phase 7) | ✅ Brought forward — public submit → DB via `submitLeadAction`, honeypot anti-spam, audit `LEAD_CREATE` with `actorId: "anonymous"`, admin list + detail + status workflow. Turnstile + per-IP rate limit still Phase 8. |
 | Fleet CMS (Phase 5) | ⏳ Not started. |
 | Support Center (Phase 6) | ⏳ Not started. |
@@ -57,7 +57,11 @@ CMS** — a single Next.js application that:
 | Testing (Phase 9) | ⏳ Not started. |
 | Production readiness + deploy (Phase 10) | ⏳ Not started. |
 
-**Currently deployable?** No — local-only. Phase 10 wires Vercel + CI/CD.
+**Currently deployable?** Not yet — Phase 4 is feature-complete and verified,
+but production deploy is blocked on the pre-deploy hardening band (CSP +
+rate-limit + Sentry + credential rotation + legal copy) and Phase 10
+infrastructure (Vercel project, Neon prod branch, `.com` DNS, env provisioning).
+Owner-approved sequence: **M11 (done) → hardening minimal → Phase 10 deploy**.
 
 ---
 

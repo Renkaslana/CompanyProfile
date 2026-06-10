@@ -62,11 +62,57 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: Se
 - MFA user-facing flows (enrollment UI + login challenge + backup-code redemption).
   Schema + encryption helpers in place; otplib v13 wiring + UI is Phase 8 work.
 
+### Added (Phase 2 — data layer)
+- `lib/data` swapped from mock arrays to DB-backed repositories/services;
+  frontend behaviour preserved (ADR 0008 seam).
+
+### Added (Phase 4 — CMS core)
+- M1: foundation primitives (`admin-form`, `status-badge`, `confirm-dialog`,
+  `media-picker`, `sanitized-html`), Cloudinary signed-upload stub, additive schema.
+- M2: User-management completion + Audit Log UX.
+- M4: Media Library UI (Cloudinary signed direct upload, folder/tag filter,
+  reference-guarded delete).
+- M5: Services CMS (CRUD + publish toggle + reorder).
+- M6: News CMS (rich-text body, sanitize-on-write+render, DRAFT→PUBLISHED→ARCHIVED).
+- M7: Gallery CMS. M8: Team + Clients CMS. M9: Stats + Settings CMS.
+- M9.5: Settings consumer migration (Footer/Hero/Kontak/Karir/metadata/JSON-LD now
+  read `getSiteSettings()`); Google Maps `mapEmbedUrl`.
+- M10: dashboard expansion (content/system metrics, recent activity, "Perlu
+  Perhatian"), public UX polish band, testimonials, legal pages (`/privasi`,
+  `/syarat-ketentuan`), corporate silhouette avatar.
+- M10.1–M10.4: Settings form testimonials/privacy/terms; shared `<ListToolbar>`
+  search + `<Pagination>` across all admin lists; audit-log filter strip.
+- CMS UX usability pass: mobile admin nav drawer, Indonesian terminology
+  (Slug→URL Halaman, Audit Log→Riwayat Aktivitas), dashboard role description +
+  "Aktivitas Saya" + "Konten Menunggu Publikasi" widgets, `<EmptyState>` primitive,
+  Settings tabbed UI, list-action consolidation, audit-log humanization.
+- Support cleanup: **Lead persistence** (public `/kontak` submit → `Lead` table via
+  `submitLeadAction`, honeypot anti-spam, `LEAD_CREATE` audit with `actorId:"anonymous"`),
+  `/admin/leads` inbox + detail + status workflow, `/bantuan` retired (301 → `/kontak`),
+  Settings tab "Layanan Pelanggan" (FAQ + supportHours).
+- Tanya BMI guided panel: header-triggered click-only Q&A reading `settings.faq[]`
+  grouped by `topic` (9 fixed topics), typing indicator, related questions,
+  contextual CTAs per topic. Floating widget retired.
+- M3 **skipped** (advanced audit UX → Phase 8).
+- M11 verification: tsc/lint/build green; RBAC matrix sweep (all entry points
+  guarded; UserService relies on page+action `users:manage` guards); audit-write
+  coverage confirmed 100% across all 11 services. Tagged `v0.4.0`.
+
+### Known deviations / cleanup candidates (recorded at Phase 4 close)
+- `UserService` does not self-guard with `requirePermission`; it relies on
+  page + Server Action `requirePermission("users:manage")`. All entry points
+  verified guarded — no exposure — but this deviates from the "service layer is
+  authoritative for RBAC" invariant. Low-risk hardening candidate (Phase 8).
+- Granted-but-inert permissions: `fleet:write` (Phase 5 pending), `faq:write` /
+  `faq:publish` / `support:manage` (Phase 6 ticket system retired). Harmless;
+  candidates for removal from `ROLE_PERMISSIONS` when those phases are finalized.
+
 ### Planned (next phases)
-- Phase 2: swap `lib/data` mock → repositories.
-- Phase 3: Auth.js v5 + RBAC + `(admin)` shell.
-- Phase 4–7: CMS core, Fleet, Support Center, Lead management.
-- Phase 8–10: security hardening, testing, production readiness.
+- Phase 5: Fleet CMS.
+- Phase 8: security hardening (CSP, MFA UI, Turnstile + rate-limit on public forms,
+  append-only audit, EXIF strip, audit CSV export).
+- Phase 9: testing (Vitest + Playwright + axe).
+- Phase 10: production readiness (Vercel deploy, custom domain, Sentry, CI/CD, backups).
 
 ---
 

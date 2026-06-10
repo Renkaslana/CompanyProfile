@@ -1,7 +1,7 @@
 {
   "name": "bmi-platform",
-  "description": "Website company profile PT. Bina Mitra Internusa (BMI) + admin/CMS (Work in Progress).",
-  "version": "0.1.0",
+  "description": "Website company profile PT. Bintang Mulia Investama (BMI) + admin/CMS.",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
