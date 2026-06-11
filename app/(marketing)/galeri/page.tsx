@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { CtaBand } from "@/components/sections/cta-band";
 import { GalleryGrid } from "@/features/content/components/gallery-grid";
 import { getGallery } from "@/lib/data";
-import { galleryCategories } from "@/mock/gallery.mock";
+import { GALLERY_CATEGORIES } from "@/lib/constants";
 
 // Phase 4 M7: render fresh on every request so newly-added items appear
 // immediately on the public gallery.
@@ -29,7 +29,7 @@ export default async function GaleriPage() {
 
       <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <GalleryGrid items={items} categories={galleryCategories} />
+          <GalleryGrid items={items} categories={GALLERY_CATEGORIES} />
         </div>
       </section>
 

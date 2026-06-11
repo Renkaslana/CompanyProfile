@@ -60,3 +60,18 @@ export const VALUES = [
       "Investasi pada armada modern, pemantauan real-time, dan layanan yang konsisten dari ujung ke ujung.",
   },
 ] as const;
+
+/**
+ * Gallery filter categories shown as chips on the public `/galeri` page.
+ * "Semua" is the default (show-all) filter; the rest must match the
+ * `category` values stored on GalleryItem rows. Kept here (not in seed data)
+ * because it is UI configuration consumed at runtime, not seed content.
+ */
+export const GALLERY_CATEGORIES = [
+  "Semua",
+  "Briefing",
+  "Loading",
+  "Pengiriman",
+  "Warehouse",
+  "Fleet",
+] as const;

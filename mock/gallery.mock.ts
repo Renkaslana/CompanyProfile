@@ -58,12 +58,3 @@ export const galleryMock: GalleryItem[] = [
     order: 8,
   },
 ];
-
-export const galleryCategories = [
-  "Semua",
-  "Briefing",
-  "Loading",
-  "Pengiriman",
-  "Warehouse",
-  "Fleet",
-] as const;
