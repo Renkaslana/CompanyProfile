@@ -162,6 +162,19 @@ export const ContentService = {
     return toFrontendNews(row, media);
   },
 
+  /**
+   * Mapped news by id REGARDLESS of status (DRAFT/PUBLISHED/ARCHIVED).
+   * Used only by the admin "Pratinjau" (preview-as-visitor) route, which is
+   * auth-gated at the page level. Public read paths still use the published-
+   * only `getNewsBySlug`.
+   */
+  async getNewsByIdForPreview(id: string): Promise<NewsPost | null> {
+    const row = await ContentRepository.findNewsById(id);
+    if (!row) return null;
+    const media = await fetchMediaForIds([row.coverId]);
+    return toFrontendNews(row, media);
+  },
+
   /* Gallery */
 
   async getGallery(): Promise<GalleryItem[]> {

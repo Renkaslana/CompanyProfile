@@ -14,7 +14,7 @@
 import { useId, useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Eye, Loader2 } from "lucide-react";
 import {
   FormBanner,
   FormField,
@@ -218,6 +218,23 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
             )}
             <div className="flex flex-col gap-2">
               <SubmitButton mode={mode} />
+              {mode === "edit" && initial.id && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  render={
+                    <Link
+                      href={`/berita/preview/${initial.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
+                  className="w-full"
+                >
+                  <Eye className="size-4" />
+                  Pratinjau
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"

@@ -66,6 +66,15 @@ export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
   return ContentService.getNewsBySlug(slug);
 }
 
+/**
+ * News by id, ANY status — for the admin preview-as-visitor route only.
+ * The consuming page (`/berita/preview/[id]`) is auth-gated; this seam
+ * function just maps. Public pages must keep using `getNewsBySlug` (published).
+ */
+export async function getNewsByIdForPreview(id: string): Promise<NewsPost | null> {
+  return ContentService.getNewsByIdForPreview(id);
+}
+
 /* ---- Team ---- */
 export async function getTeam(): Promise<TeamMember[]> {
   return ContentService.getTeam();
