@@ -11,20 +11,17 @@
  * Body field is an HTML textarea + live sanitized preview pane (defense in
  * depth on top of server-side sanitization in `NewsCmsService.create/update`).
  */
-import { useId, useState, useActionState, useMemo } from "react";
+import { useId, useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { AlertTriangle, Eye, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import {
   FormActions,
   FormBanner,
   FormField,
   FormSection,
 } from "@/components/admin/admin-form";
-import {
-  SanitizedHtml,
-  SANITIZE_OPTIONS,
-} from "@/components/admin/sanitized-html";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,14 +77,6 @@ function slugify(s: string) {
     .slice(0, 80);
 }
 
-/** Render-time hint listing the same tags `SANITIZE_OPTIONS.allowedTags` permits. */
-function allowedTagsLabel(): string {
-  const tags = SANITIZE_OPTIONS.allowedTags;
-  return Array.isArray(tags)
-    ? tags.join(", ")
-    : "p, h2, h3, strong, em, ul, ol, li, a";
-}
-
 export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
   const titleId = useId();
   const slugId = useId();
@@ -109,11 +98,10 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
   const [slug, setSlug] = useState(v?.slug ?? initial.slug);
   const [slugDirty, setSlugDirty] = useState(mode === "edit" || Boolean(v?.slug));
 
-  // Live body preview — uses the SanitizedHtml component which re-sanitizes
-  // on render so we mirror exactly what the public page will show.
+  // Body is edited via the WYSIWYG RichTextEditor and posted as an HTML string
+  // through a hidden input. Server still sanitizes on write; the public page
+  // re-sanitizes on render (defense in depth) — unchanged.
   const [body, setBody] = useState(v?.body ?? initial.body);
-
-  const initialPreview = useMemo(() => body, [body]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -231,41 +219,21 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
         </FormField>
 
         <FormField
-          label="Isi berita (HTML)"
+          label="Isi berita"
           htmlFor={bodyId}
-          hint={`Tag yang diizinkan: ${allowedTagsLabel()}. HTML disanitasi otomatis saat disimpan & saat ditampilkan.`}
+          hint="Gunakan toolbar untuk memformat teks — tebal, judul, daftar, kutipan, dan tautan. Tidak perlu menulis HTML."
           required
           error={fe?.body?.[0]}
         >
-          <div className="grid gap-4 lg:grid-cols-2">
-            <textarea
-              id={bodyId}
-              name="body"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              maxLength={50000}
-              required
-              rows={20}
-              aria-invalid={Boolean(fe?.body)}
-              className="min-w-0 font-mono text-xs rounded-lg border border-input bg-transparent px-2.5 py-1.5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              placeholder="<p>Paragraf pertama…</p>&#10;<h2>Sub-judul</h2>&#10;<p>Paragraf <strong>dengan penekanan</strong>.</p>"
-            />
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <Eye className="size-3.5" />
-                Pratinjau sanitized
-              </div>
-              {body.trim() ? (
-                <SanitizedHtml html={body} className="max-h-[420px] overflow-auto" />
-              ) : (
-                <p className="text-xs italic text-muted-foreground">
-                  (Ketik HTML di kiri untuk melihat pratinjau.)
-                </p>
-              )}
-              {/* Hidden so the previewed value matches what was first rendered; preview re-sanitizes every keystroke */}
-              <span className="hidden">{initialPreview}</span>
-            </div>
-          </div>
+          {/* Body dikirim sebagai HTML string lewat hidden input; server tetap
+              men-sanitize saat write + render. */}
+          <input type="hidden" name="body" value={body} />
+          <RichTextEditor
+            value={body}
+            onChange={setBody}
+            ariaLabel="Isi berita"
+            minHeightClass="min-h-[420px]"
+          />
         </FormField>
       </FormSection>
 

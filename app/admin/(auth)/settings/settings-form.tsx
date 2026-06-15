@@ -17,17 +17,14 @@
  */
 import { useActionState, useState, useId, useMemo } from "react";
 import { useFormStatus } from "react-dom";
-import { AlertTriangle, Eye, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   FormActions,
   FormBanner,
   FormField,
   FormSection,
 } from "@/components/admin/admin-form";
-import {
-  SanitizedHtml,
-  SANITIZE_OPTIONS,
-} from "@/components/admin/sanitized-html";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import {
   MediaPicker,
   type MediaPickerAsset,
@@ -55,14 +52,6 @@ type Props = {
     formData: FormData,
   ) => Promise<SettingsFormState | null>;
 };
-
-/** Same allowed-tags hint used by the News editor — kept consistent. */
-function allowedTagsLabel(): string {
-  const tags = SANITIZE_OPTIONS.allowedTags;
-  return Array.isArray(tags)
-    ? tags.join(", ")
-    : "p, h2, h3, strong, em, ul, ol, li, a";
-}
 
 /**
  * Tab grouping (UX 5). Each tab shows only its own sections; the others stay
@@ -755,38 +744,17 @@ export function SettingsForm({
               description="Konten halaman /privasi. HTML disanitasi otomatis. Kosongkan untuk pakai versi placeholder."
             >
               <FormField
-                label="Isi kebijakan (HTML)"
+                label="Isi kebijakan"
                 htmlFor={ids.privacyPolicy}
-                hint={`Tag yang diizinkan: ${allowedTagsLabel()}.`}
+                hint="Gunakan toolbar untuk memformat — judul, paragraf, daftar. Kosongkan untuk pakai teks placeholder bawaan."
                 error={fieldErr(fe, "company.privacyPolicy")}
               >
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <textarea
-                    id={ids.privacyPolicy}
-                    value={privacyHtml}
-                    onChange={(e) => setField("privacyPolicy", e.target.value)}
-                    rows={14}
-                    maxLength={50000}
-                    className="min-w-0 font-mono text-xs rounded-lg border border-input bg-transparent px-2.5 py-1.5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                    placeholder="<p>Kebijakan privasi…</p>&#10;<h2>Informasi yang kami kumpulkan</h2>&#10;<p>…</p>"
-                  />
-                  <div className="rounded-lg border border-border bg-card p-4">
-                    <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      <Eye className="size-3.5" />
-                      Pratinjau sanitized
-                    </div>
-                    {privacyHtml.trim() ? (
-                      <SanitizedHtml
-                        html={privacyHtml}
-                        className="max-h-[420px] overflow-auto"
-                      />
-                    ) : (
-                      <p className="text-xs italic text-muted-foreground">
-                        (Ketik HTML di kiri untuk melihat pratinjau. Kosongkan untuk pakai teks placeholder.)
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <RichTextEditor
+                  value={privacyHtml}
+                  onChange={(html) => setField("privacyPolicy", html)}
+                  ariaLabel="Isi kebijakan privasi"
+                  minHeightClass="min-h-[320px]"
+                />
               </FormField>
             </FormSection>
           </div>
@@ -798,38 +766,17 @@ export function SettingsForm({
               description="Konten halaman /syarat-ketentuan. HTML disanitasi otomatis. Kosongkan untuk pakai versi placeholder."
             >
               <FormField
-                label="Isi syarat & ketentuan (HTML)"
+                label="Isi syarat & ketentuan"
                 htmlFor={ids.termsAndConditions}
-                hint={`Tag yang diizinkan: ${allowedTagsLabel()}.`}
+                hint="Gunakan toolbar untuk memformat — judul, paragraf, daftar. Kosongkan untuk pakai teks placeholder bawaan."
                 error={fieldErr(fe, "company.termsAndConditions")}
               >
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <textarea
-                    id={ids.termsAndConditions}
-                    value={termsHtml}
-                    onChange={(e) => setField("termsAndConditions", e.target.value)}
-                    rows={14}
-                    maxLength={50000}
-                    className="min-w-0 font-mono text-xs rounded-lg border border-input bg-transparent px-2.5 py-1.5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                    placeholder="<p>Syarat & ketentuan…</p>&#10;<h2>Penggunaan situs</h2>&#10;<p>…</p>"
-                  />
-                  <div className="rounded-lg border border-border bg-card p-4">
-                    <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      <Eye className="size-3.5" />
-                      Pratinjau sanitized
-                    </div>
-                    {termsHtml.trim() ? (
-                      <SanitizedHtml
-                        html={termsHtml}
-                        className="max-h-[420px] overflow-auto"
-                      />
-                    ) : (
-                      <p className="text-xs italic text-muted-foreground">
-                        (Ketik HTML di kiri untuk melihat pratinjau. Kosongkan untuk pakai teks placeholder.)
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <RichTextEditor
+                  value={termsHtml}
+                  onChange={(html) => setField("termsAndConditions", html)}
+                  ariaLabel="Isi syarat & ketentuan"
+                  minHeightClass="min-h-[320px]"
+                />
               </FormField>
             </FormSection>
           </div>
