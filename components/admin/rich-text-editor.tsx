@@ -15,7 +15,7 @@
  */
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import {
   Bold,
   Italic,
@@ -87,6 +87,19 @@ export function RichTextEditor({
       onChange(html === "<p></p>" ? "" : html);
     },
   });
+
+  // Sinkronkan perubahan `value` dari LUAR (mis. pulihkan draft / reset form)
+  // ke dalam editor. Diguard: saat user mengetik normal, value === HTML editor
+  // sehingga setContent tidak terpanggil (tanpa lompat kursor). `emitUpdate:
+  // false` mencegah loop onChange.
+  useEffect(() => {
+    if (!editor) return;
+    const raw = editor.getHTML();
+    const currentHtml = raw === "<p></p>" ? "" : raw;
+    if ((value || "") !== currentHtml) {
+      editor.commands.setContent(value || "", { emitUpdate: false });
+    }
+  }, [value, editor]);
 
   if (!editor) {
     return (

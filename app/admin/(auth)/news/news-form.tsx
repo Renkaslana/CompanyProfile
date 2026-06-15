@@ -14,13 +14,14 @@
 import { useId, useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
-import { AlertTriangle, Eye, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, Cloud, Eye, History, Loader2, X } from "lucide-react";
 import {
   FormBanner,
   FormField,
   FormSection,
 } from "@/components/admin/admin-form";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { useNewsDraft } from "./use-news-draft";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,6 +66,38 @@ function SubmitButton({ mode }: { mode: "create" | "edit" }) {
   );
 }
 
+function AutosaveIndicator({
+  status,
+  savedAt,
+}: {
+  status: "idle" | "saving" | "saved";
+  savedAt: number | null;
+}) {
+  if (status === "idle") return null;
+  const time = savedAt
+    ? new Date(savedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    : null;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+      title="Tersimpan otomatis di perangkat ini (browser) — bukan pengganti tombol Simpan"
+      aria-live="polite"
+    >
+      {status === "saving" ? (
+        <>
+          <Cloud className="size-3.5 animate-pulse" />
+          Menyimpan draf…
+        </>
+      ) : (
+        <>
+          <Check className="size-3.5 text-emerald-600" />
+          Draf tersimpan otomatis{time ? ` · ${time}` : ""}
+        </>
+      )}
+    </span>
+  );
+}
+
 function slugify(s: string) {
   return s
     .toLowerCase()
@@ -102,8 +135,43 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
   // re-sanitizes on render (defense in depth) — unchanged.
   const [body, setBody] = useState(v?.body ?? initial.body);
 
+  // Controlled agar bisa di-autosave + dipulihkan secara seragam.
+  const [excerpt, setExcerpt] = useState(v?.excerpt ?? initial.excerpt);
+  const [category, setCategory] = useState(v?.category ?? initial.category);
+  const [displayAuthor, setDisplayAuthor] = useState(
+    v?.displayAuthor ?? initial.displayAuthor,
+  );
+
+  // Autosave + recovery (localStorage, per-perangkat). Lihat use-news-draft.ts.
+  const snapshot = { title, slug, excerpt, body, category, displayAuthor };
+  const draft = useNewsDraft(initial.id, snapshot, {
+    title: initial.title,
+    slug: initial.slug,
+    excerpt: initial.excerpt,
+    body: initial.body,
+    category: initial.category,
+    displayAuthor: initial.displayAuthor,
+  });
+
+  function recoverDraft() {
+    const s = draft.recoverable;
+    if (!s) return;
+    setTitle(s.title);
+    setSlug(s.slug);
+    setSlugDirty(true);
+    setExcerpt(s.excerpt);
+    setBody(s.body);
+    setCategory(s.category);
+    setDisplayAuthor(s.displayAuthor);
+    draft.dismissRecovery();
+  }
+
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      action={formAction}
+      onSubmit={() => draft.clear()}
+      className="space-y-6"
+    >
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
 
       {state && (
@@ -127,11 +195,36 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
         />
       )}
 
+      {/* Banner pemulihan draft (localStorage) */}
+      {draft.recoverable && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand-orange/40 bg-brand-orange/5 px-3 py-2 text-sm"
+        >
+          <span className="inline-flex items-center gap-2 text-ink-900">
+            <History className="size-4 shrink-0 text-brand-orange-strong" />
+            Ada tulisan yang belum tersimpan dari sesi sebelumnya di perangkat ini.
+          </span>
+          <span className="flex items-center gap-2">
+            <Button type="button" size="sm" onClick={recoverDraft} className="bg-brand-orange text-white hover:bg-brand-orange-strong">
+              Pulihkan
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => draft.clear()}>
+              <X className="size-3.5" />
+              Abaikan
+            </Button>
+          </span>
+        </div>
+      )}
+
       {/* Judul — penuh di atas, prominen (pola Notion/WordPress) */}
       <div className="grid gap-1.5">
-        <label htmlFor={titleId} className="sr-only">
-          Judul berita
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor={titleId} className="sr-only">
+            Judul berita
+          </label>
+          <AutosaveIndicator status={draft.status} savedAt={draft.savedAt} />
+        </div>
         <Input
           id={titleId}
           name="title"
@@ -166,7 +259,8 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
               <textarea
                 id={excerptId}
                 name="excerpt"
-                defaultValue={v?.excerpt ?? initial.excerpt}
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
                 maxLength={500}
                 required
                 rows={3}
@@ -274,7 +368,8 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
               <Input
                 id={categoryId}
                 name="category"
-                defaultValue={v?.category ?? initial.category}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 maxLength={60}
                 required
                 aria-invalid={Boolean(fe?.category)}
@@ -290,7 +385,8 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
               <Input
                 id={displayAuthorId}
                 name="displayAuthor"
-                defaultValue={v?.displayAuthor ?? initial.displayAuthor}
+                value={displayAuthor}
+                onChange={(e) => setDisplayAuthor(e.target.value)}
                 maxLength={120}
                 aria-invalid={Boolean(fe?.displayAuthor)}
               />
