@@ -16,7 +16,6 @@ import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import {
-  FormActions,
   FormBanner,
   FormField,
   FormSection,
@@ -128,153 +127,182 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
         />
       )}
 
-      <FormSection title="Identitas" description="Slug dipakai sebagai URL: /berita/<slug>.">
-        <FormField label="Judul" htmlFor={titleId} required error={fe?.title?.[0]}>
-          <Input
-            id={titleId}
-            name="title"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (!slugDirty) setSlug(slugify(e.target.value));
-            }}
-            maxLength={200}
-            required
-            aria-invalid={Boolean(fe?.title)}
-          />
-        </FormField>
-
-        <FormField
-          label="URL Halaman (slug)"
-          htmlFor={slugId}
-          hint="Bagian akhir alamat halaman publik — contoh: /berita/peluncuran-armada-baru. Hanya huruf kecil, angka, dan tanda hubung. Otomatis dari judul; ubah jika perlu."
+      {/* Judul — penuh di atas, prominen (pola Notion/WordPress) */}
+      <div className="grid gap-1.5">
+        <label htmlFor={titleId} className="sr-only">
+          Judul berita
+        </label>
+        <Input
+          id={titleId}
+          name="title"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (!slugDirty) setSlug(slugify(e.target.value));
+          }}
+          maxLength={200}
           required
-          error={fe?.slug?.[0]}
-        >
-          <Input
-            id={slugId}
-            name="slug"
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setSlugDirty(true);
-            }}
-            maxLength={80}
-            required
-            aria-invalid={Boolean(fe?.slug)}
-          />
-        </FormField>
+          aria-invalid={Boolean(fe?.title)}
+          placeholder="Judul berita…"
+          className="h-auto border-0 bg-transparent px-0 py-1 font-display text-2xl font-bold text-ink-900 shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
+        />
+        {fe?.title?.[0] && (
+          <p className="text-xs text-destructive" role="alert">{fe.title[0]}</p>
+        )}
+      </div>
 
-        <FormField
-          label="Kategori"
-          htmlFor={categoryId}
-          hint="Mis. Armada, Operasional, Teknologi, Kemitraan."
-          required
-          error={fe?.category?.[0]}
-        >
-          <Input
-            id={categoryId}
-            name="category"
-            defaultValue={v?.category ?? initial.category}
-            maxLength={60}
-            required
-            aria-invalid={Boolean(fe?.category)}
-          />
-        </FormField>
-
-        <FormField
-          label="Penulis (display)"
-          htmlFor={displayAuthorId}
-          hint="Opsional. Override byline (mis. 'Tim Komunikasi BMI'). Kosongkan untuk pakai nama pemilik akun."
-          error={fe?.displayAuthor?.[0]}
-        >
-          <Input
-            id={displayAuthorId}
-            name="displayAuthor"
-            defaultValue={v?.displayAuthor ?? initial.displayAuthor}
-            maxLength={120}
-            aria-invalid={Boolean(fe?.displayAuthor)}
-          />
-        </FormField>
-      </FormSection>
-
-      <FormSection title="Konten">
-        <FormField
-          label="Ringkasan singkat"
-          htmlFor={excerptId}
-          hint="2 – 500 karakter. Tampil di kartu daftar berita + sebagai meta description halaman."
-          required
-          error={fe?.excerpt?.[0]}
-        >
-          <textarea
-            id={excerptId}
-            name="excerpt"
-            defaultValue={v?.excerpt ?? initial.excerpt}
-            maxLength={500}
-            required
-            rows={3}
-            aria-invalid={Boolean(fe?.excerpt)}
-            className="min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          />
-        </FormField>
-
-        <FormField
-          label="Isi berita"
-          htmlFor={bodyId}
-          hint="Gunakan toolbar untuk memformat teks — tebal, judul, daftar, kutipan, dan tautan. Tidak perlu menulis HTML."
-          required
-          error={fe?.body?.[0]}
-        >
-          {/* Body dikirim sebagai HTML string lewat hidden input; server tetap
-              men-sanitize saat write + render. */}
-          <input type="hidden" name="body" value={body} />
-          <RichTextEditor
-            value={body}
-            onChange={setBody}
-            ariaLabel="Isi berita"
-            minHeightClass="min-h-[420px]"
-          />
-        </FormField>
-      </FormSection>
-
-      <FormSection title="Visual">
-        <FormField
-          label="Cover image"
-          htmlFor="coverId"
-          hint="Opsional tapi sangat disarankan. Pilih dari Media Library."
-          error={fe?.coverId?.[0]}
-        >
-          <MediaPicker
-            name="coverId"
-            defaultValue={v?.coverId ?? initial.coverId ?? undefined}
-            assets={mediaAssets}
-          />
-        </FormField>
-      </FormSection>
-
-      {mode === "create" && (
-        <FormSection title="Publikasi">
-          <FormField label="Status" htmlFor={publishImmediatelyId}>
-            <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                id={publishImmediatelyId}
-                type="checkbox"
-                name="publishImmediately"
-                defaultChecked={v?.publishImmediately ?? initial.publishImmediately}
-                className="size-4 rounded border-input"
+      {/* Dua kolom: konten (kiri) + Publish Box (kanan) */}
+      <div className="lg:grid lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-6">
+        {/* ── Kolom kiri: konten utama ─────────────────────────────── */}
+        <div className="space-y-6">
+          <FormSection title="Konten">
+            <FormField
+              label="Ringkasan singkat"
+              htmlFor={excerptId}
+              hint="2 – 500 karakter. Tampil di kartu daftar berita + sebagai meta description halaman."
+              required
+              error={fe?.excerpt?.[0]}
+            >
+              <textarea
+                id={excerptId}
+                name="excerpt"
+                defaultValue={v?.excerpt ?? initial.excerpt}
+                maxLength={500}
+                required
+                rows={3}
+                aria-invalid={Boolean(fe?.excerpt)}
+                className="min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               />
-              Langsung publish setelah disimpan
-            </label>
-          </FormField>
-        </FormSection>
-      )}
+            </FormField>
 
-      <FormActions>
-        <Button type="button" variant="outline" render={<Link href="/admin/news" />}>
-          Batal
-        </Button>
-        <SubmitButton mode={mode} />
-      </FormActions>
+            <FormField
+              label="Isi berita"
+              htmlFor={bodyId}
+              hint="Gunakan toolbar untuk memformat teks — tebal, judul, daftar, kutipan, dan tautan. Tidak perlu menulis HTML."
+              required
+              error={fe?.body?.[0]}
+            >
+              {/* Body dikirim sebagai HTML string lewat hidden input; server tetap
+                  men-sanitize saat write + render. */}
+              <input type="hidden" name="body" value={body} />
+              <RichTextEditor
+                value={body}
+                onChange={setBody}
+                ariaLabel="Isi berita"
+                minHeightClass="min-h-[420px]"
+              />
+            </FormField>
+          </FormSection>
+        </div>
+
+        {/* ── Kolom kanan: Publish Box (sticky) ────────────────────── */}
+        <aside className="mt-6 space-y-4 lg:mt-0 lg:sticky lg:top-24">
+          {/* Aksi publikasi */}
+          <FormSection title="Publikasi" className="p-4">
+            {mode === "create" && (
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border bg-background p-3 text-sm">
+                <input
+                  id={publishImmediatelyId}
+                  type="checkbox"
+                  name="publishImmediately"
+                  defaultChecked={v?.publishImmediately ?? initial.publishImmediately}
+                  className="mt-0.5 size-4 rounded border-input"
+                />
+                <span>
+                  <span className="font-medium text-ink-900">Langsung terbitkan</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    Jika tidak dicentang, berita disimpan sebagai draft.
+                  </span>
+                </span>
+              </label>
+            )}
+            <div className="flex flex-col gap-2">
+              <SubmitButton mode={mode} />
+              <Button
+                type="button"
+                variant="outline"
+                render={<Link href="/admin/news" />}
+                className="w-full"
+              >
+                Batal
+              </Button>
+            </div>
+          </FormSection>
+
+          {/* Cover image */}
+          <FormSection title="Gambar sampul" className="p-4">
+            <FormField
+              label=""
+              htmlFor="coverId"
+              hint="Opsional tapi sangat disarankan. Tampil di kartu berita & bagian atas artikel."
+              error={fe?.coverId?.[0]}
+            >
+              <MediaPicker
+                name="coverId"
+                defaultValue={v?.coverId ?? initial.coverId ?? undefined}
+                assets={mediaAssets}
+              />
+            </FormField>
+          </FormSection>
+
+          {/* Detail / metadata */}
+          <FormSection title="Detail" className="p-4">
+            <FormField
+              label="Kategori"
+              htmlFor={categoryId}
+              hint="Mis. Armada, Operasional, Teknologi, Kemitraan."
+              required
+              error={fe?.category?.[0]}
+            >
+              <Input
+                id={categoryId}
+                name="category"
+                defaultValue={v?.category ?? initial.category}
+                maxLength={60}
+                required
+                aria-invalid={Boolean(fe?.category)}
+              />
+            </FormField>
+
+            <FormField
+              label="Penulis (opsional)"
+              htmlFor={displayAuthorId}
+              hint="Override byline, mis. 'Tim Komunikasi BMI'. Kosongkan untuk pakai nama akun Anda."
+              error={fe?.displayAuthor?.[0]}
+            >
+              <Input
+                id={displayAuthorId}
+                name="displayAuthor"
+                defaultValue={v?.displayAuthor ?? initial.displayAuthor}
+                maxLength={120}
+                aria-invalid={Boolean(fe?.displayAuthor)}
+              />
+            </FormField>
+
+            <FormField
+              label="URL Halaman"
+              htmlFor={slugId}
+              hint="Alamat publik: /berita/<slug>. Otomatis dari judul; ubah bila perlu."
+              required
+              error={fe?.slug?.[0]}
+            >
+              <Input
+                id={slugId}
+                name="slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setSlugDirty(true);
+                }}
+                maxLength={80}
+                required
+                aria-invalid={Boolean(fe?.slug)}
+                className="font-mono text-xs"
+              />
+            </FormField>
+          </FormSection>
+        </aside>
+      </div>
     </form>
   );
 }
