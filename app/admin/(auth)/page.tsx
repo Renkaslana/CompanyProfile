@@ -38,7 +38,7 @@ import { requireFreshSession } from "@/server/auth/guards";
 import { db } from "@/lib/db";
 import { UserRepository } from "@/server/repositories/user.repository";
 import { MediaRepository } from "@/server/repositories/media.repository";
-import { ACTION_LABEL, ENTITY_LABEL, ROLE_LABEL } from "@/lib/admin-i18n";
+import { ACTION_LABEL, ENTITY_LABEL, ROLE_LABEL, summarizeAuditMeta } from "@/lib/admin-i18n";
 import { formatRelativeID } from "@/lib/format";
 import type { RoleName } from "@/server/auth/permissions";
 
@@ -130,9 +130,9 @@ export default async function DashboardPage({
     db.lead.count({ where: { status: "NEW" } }),
     db.auditLog.findMany({
       where: { entity: { in: CONTENT_ENTITIES } },
-      take: 6,
+      take: 8,
       orderBy: { createdAt: "desc" },
-      select: { id: true, action: true, entity: true, actorId: true, createdAt: true },
+      select: { id: true, action: true, entity: true, actorId: true, createdAt: true, meta: true },
     }),
     db.newsPost.findMany({
       take: 5,
@@ -347,7 +347,7 @@ export default async function DashboardPage({
               </p>
             ) : (
               <ul className="divide-y divide-border">
-                {recentAudit.map((a) => {
+                {recentAudit.slice(0, 5).map((a) => {
                   const actor = actorMap.get(a.actorId);
                   const v = ENTITY_VISUAL[a.entity] ?? FALLBACK_VISUAL;
                   return (
@@ -366,13 +366,6 @@ export default async function DashboardPage({
                   );
                 })}
               </ul>
-            )}
-            {can("audit:read") && (
-              <div className="border-t border-border bg-muted/30 px-5 py-3">
-                <Link href="/admin/audit" className="inline-flex items-center gap-1 text-xs font-medium text-brand-orange-strong hover:underline">
-                  Lihat semua riwayat aktivitas →
-                </Link>
-              </div>
             )}
           </div>
         </section>
@@ -434,6 +427,69 @@ export default async function DashboardPage({
 
         <AnalyticsPlaceholder />
       </div>
+
+      {/* ── Riwayat Aktivitas (tabel) ──────────────────────────────── */}
+      {can("audit:read") && recentAudit.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Riwayat Aktivitas
+            </h2>
+            <Link
+              href="/admin/audit"
+              className="inline-flex items-center gap-1 text-xs font-medium text-brand-orange-strong hover:underline"
+            >
+              Lihat semua aktivitas →
+            </Link>
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-semibold">Waktu</th>
+                  <th className="px-5 py-3 font-semibold">Aktivitas</th>
+                  <th className="px-5 py-3 font-semibold">Aktor</th>
+                  <th className="px-5 py-3 font-semibold">Kategori</th>
+                  <th className="px-5 py-3 font-semibold">Detail</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {recentAudit.map((a) => {
+                  const actor = actorMap.get(a.actorId);
+                  const v = ENTITY_VISUAL[a.entity] ?? FALLBACK_VISUAL;
+                  return (
+                    <tr key={a.id} className="hover:bg-muted/20">
+                      <td className="whitespace-nowrap px-5 py-3 text-xs text-muted-foreground">
+                        {new Date(a.createdAt).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td className="px-5 py-3 font-medium text-ink-900">
+                        {ACTION_LABEL[a.action] ?? a.action}
+                      </td>
+                      <td className="whitespace-nowrap px-5 py-3 text-muted-foreground">
+                        {actor ? actor.name : a.actorId === "anonymous" ? "Anonim" : "Sistem"}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${v.tile}`}>
+                          {ENTITY_LABEL[a.entity] ?? a.entity}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-muted-foreground">
+                        {summarizeAuditMeta(a.meta)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
