@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { ROLE_LABEL } from "@/lib/admin-i18n";
 import type { RoleName } from "@/server/auth/permissions";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
+import { CommandPalette, type CommandItem } from "@/components/admin/command-palette";
 import { signOutAction } from "./_actions";
 
 type NavLink = {
@@ -63,6 +64,24 @@ export default async function AuthAdminLayout({
 
   const visibleNav = NAV.filter((l) => allowed(l.perm));
   const roleLabel = ROLE_LABEL[user.role as RoleName] ?? user.role;
+
+  // Command Palette (Ctrl+K) items — aksi pembuatan dulu, lalu navigasi.
+  // Serializable (tanpa komponen ikon); difilter izin di sini.
+  const commandItems: CommandItem[] = [
+    ...(allowed("content:write")
+      ? [
+          { href: "/admin/news/new", label: "Tulis berita baru", iconKey: "news-new", group: "Aksi" },
+          { href: "/admin/services/new", label: "Tambah layanan", iconKey: "service-new", group: "Aksi" },
+          { href: "/admin/gallery/new", label: "Tambah item galeri", iconKey: "gallery-new", group: "Aksi" },
+        ]
+      : []),
+    ...visibleNav.map((l) => ({
+      href: l.href,
+      label: l.label,
+      iconKey: l.iconKey,
+      group: "Navigasi",
+    })),
+  ];
 
   return (
     <div className="flex min-h-screen">
@@ -108,7 +127,8 @@ export default async function AuthAdminLayout({
             <Logo variant="onLight" showText={false} />
             <span className="font-display text-sm font-semibold text-ink-900">BMI Admin</span>
           </div>
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-3">
+            <CommandPalette items={commandItems} />
             <span className="hidden text-sm text-muted-foreground md:inline">
               <Boxes className="mr-1 inline size-4" />
               {roleLabel}
