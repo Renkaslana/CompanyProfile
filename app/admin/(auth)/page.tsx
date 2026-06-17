@@ -13,13 +13,16 @@
  * masing-masing. Tanpa angka palsu — slot analytics adalah placeholder jujur.
  */
 import Link from "next/link";
+import Image from "next/image";
 import {
   AlertTriangle,
   Archive,
   ArrowRight,
   BarChart3,
   Boxes,
+  Building2,
   CheckCircle2,
+  ImageIcon,
   ImagePlus,
   Images,
   Inbox,
@@ -28,10 +31,13 @@ import {
   PencilLine,
   Settings2,
   UserCircle2,
+  Users2,
+  type LucideIcon,
 } from "lucide-react";
 import { requireFreshSession } from "@/server/auth/guards";
 import { db } from "@/lib/db";
 import { UserRepository } from "@/server/repositories/user.repository";
+import { MediaRepository } from "@/server/repositories/media.repository";
 import { ACTION_LABEL, ENTITY_LABEL, ROLE_LABEL } from "@/lib/admin-i18n";
 import { formatRelativeID } from "@/lib/format";
 import type { RoleName } from "@/server/auth/permissions";
@@ -60,6 +66,20 @@ const CONTENT_ENTITIES = [
   "MediaAsset",
   "Lead",
 ];
+
+/** Ikon + warna tile per entitas audit (untuk feed Aktivitas Terbaru). */
+const ENTITY_VISUAL: Record<string, { icon: LucideIcon; tile: string }> = {
+  NewsPost: { icon: Newspaper, tile: "bg-brand-orange/12 text-brand-orange-strong" },
+  GalleryItem: { icon: Images, tile: "bg-violet-500/12 text-violet-600" },
+  Service: { icon: Boxes, tile: "bg-sky-500/12 text-sky-600" },
+  TeamMember: { icon: Users2, tile: "bg-blue-500/12 text-blue-600" },
+  ClientLogo: { icon: Building2, tile: "bg-teal-500/12 text-teal-600" },
+  Stat: { icon: BarChart3, tile: "bg-indigo-500/12 text-indigo-600" },
+  SiteSettings: { icon: Settings2, tile: "bg-slate-500/12 text-slate-600" },
+  MediaAsset: { icon: ImageIcon, tile: "bg-fuchsia-500/12 text-fuchsia-600" },
+  Lead: { icon: MessagesSquare, tile: "bg-emerald-500/12 text-emerald-600" },
+};
+const FALLBACK_VISUAL = { icon: BarChart3, tile: "bg-muted text-muted-foreground" };
 
 /** Sapaan menyesuaikan waktu (zona WIB). */
 function greeting(): string {
@@ -117,17 +137,17 @@ export default async function DashboardPage({
     db.newsPost.findMany({
       take: 5,
       orderBy: { updatedAt: "desc" },
-      select: { id: true, title: true, status: true, updatedAt: true },
+      select: { id: true, title: true, status: true, updatedAt: true, coverId: true },
     }),
     db.service.findMany({
       take: 5,
       orderBy: { updatedAt: "desc" },
-      select: { id: true, title: true, published: true, updatedAt: true },
+      select: { id: true, title: true, published: true, updatedAt: true, coverId: true },
     }),
     db.galleryItem.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, category: true, createdAt: true },
+      select: { id: true, title: true, category: true, createdAt: true, mediaId: true },
     }),
   ]);
 
@@ -180,15 +200,20 @@ export default async function DashboardPage({
   };
 
   // ── Konten Terbaru (gabungan lintas modul) ─────────────────────────
-  type RecentItem = { id: string; title: string; type: string; status: string; date: Date; href: string; icon: typeof Newspaper; tile: string };
+  type RecentItem = { id: string; title: string; type: string; status: string; date: Date; href: string; icon: LucideIcon; tile: string; mediaId: string | null };
   const newsStatusLabel: Record<string, string> = { PUBLISHED: "Dipublikasi", DRAFT: "Draft", ARCHIVED: "Arsip" };
   const recentContent: RecentItem[] = [
-    ...recentNews.map((n) => ({ id: n.id, title: n.title, type: "Berita", status: newsStatusLabel[n.status] ?? n.status, date: n.updatedAt, href: `/admin/news/${n.id}/edit`, icon: Newspaper, tile: "bg-brand-orange/12 text-brand-orange-strong" })),
-    ...recentServices.map((s) => ({ id: s.id, title: s.title, type: "Layanan", status: s.published ? "Aktif" : "Draft", date: s.updatedAt, href: `/admin/services/${s.id}/edit`, icon: Boxes, tile: "bg-sky-500/12 text-sky-600" })),
-    ...recentGallery.map((g) => ({ id: g.id, title: g.title, type: "Galeri", status: g.category, date: g.createdAt, href: `/admin/gallery/${g.id}/edit`, icon: Images, tile: "bg-violet-500/12 text-violet-600" })),
+    ...recentNews.map((n) => ({ id: n.id, title: n.title, type: "Berita", status: newsStatusLabel[n.status] ?? n.status, date: n.updatedAt, href: `/admin/news/${n.id}/edit`, icon: Newspaper, tile: "bg-brand-orange/12 text-brand-orange-strong", mediaId: n.coverId })),
+    ...recentServices.map((s) => ({ id: s.id, title: s.title, type: "Layanan", status: s.published ? "Aktif" : "Draft", date: s.updatedAt, href: `/admin/services/${s.id}/edit`, icon: Boxes, tile: "bg-sky-500/12 text-sky-600", mediaId: s.coverId })),
+    ...recentGallery.map((g) => ({ id: g.id, title: g.title, type: "Galeri", status: g.category, date: g.createdAt, href: `/admin/gallery/${g.id}/edit`, icon: Images, tile: "bg-violet-500/12 text-violet-600", mediaId: g.mediaId })),
   ]
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 5);
+
+  // Ambil cover/thumbnail untuk item Konten Terbaru (batched).
+  const recentMediaIds = [...new Set(recentContent.map((c) => c.mediaId).filter((id): id is string => Boolean(id)))];
+  const recentMedia = recentMediaIds.length ? await MediaRepository.findManyById(recentMediaIds) : [];
+  const mediaById = new Map(recentMedia.map((m) => [m.id, m]));
 
   const roleLabel = ROLE_LABEL[user.role as RoleName] ?? user.role;
 
@@ -324,9 +349,13 @@ export default async function DashboardPage({
               <ul className="divide-y divide-border">
                 {recentAudit.map((a) => {
                   const actor = actorMap.get(a.actorId);
+                  const v = ENTITY_VISUAL[a.entity] ?? FALLBACK_VISUAL;
                   return (
-                    <li key={a.id} className="flex items-start justify-between gap-3 px-5 py-3">
-                      <div className="flex-1">
+                    <li key={a.id} className="flex items-center gap-3 px-5 py-3">
+                      <span className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl ${v.tile}`}>
+                        <v.icon className="size-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-ink-900">{describeAudit(a.action, a.entity)}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {actor ? actor.name : a.actorId === "anonymous" ? "anonim" : "sistem"}
@@ -362,22 +391,42 @@ export default async function DashboardPage({
               </p>
             ) : (
               <ul className="divide-y divide-border">
-                {recentContent.map((c) => (
-                  <li key={`${c.type}-${c.id}`}>
-                    <Link href={c.href} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30">
-                      <span className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl ${c.tile}`}>
-                        <c.icon className="size-4" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-ink-900">{c.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {c.type} · {c.status}
-                        </p>
-                      </div>
-                      <p className="shrink-0 text-xs text-muted-foreground">{formatRelativeID(c.date)}</p>
-                    </Link>
-                  </li>
-                ))}
+                {recentContent.map((c) => {
+                  const media = c.mediaId ? mediaById.get(c.mediaId) : undefined;
+                  const url = media?.url ?? "";
+                  const isCloudinary = url.startsWith("https://res.cloudinary.com");
+                  const isLocal = url.startsWith("/");
+                  const unoptimized = Boolean(url) && !isCloudinary && !isLocal;
+                  return (
+                    <li key={`${c.type}-${c.id}`}>
+                      <Link href={c.href} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30">
+                        {url ? (
+                          <span className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                            <Image
+                              src={url}
+                              alt={media?.alt ?? ""}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                              unoptimized={unoptimized}
+                            />
+                          </span>
+                        ) : (
+                          <span className={`inline-flex size-10 shrink-0 items-center justify-center rounded-lg ${c.tile}`}>
+                            <c.icon className="size-4" />
+                          </span>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-ink-900">{c.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {c.type} · {c.status}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-xs text-muted-foreground">{formatRelativeID(c.date)}</p>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
