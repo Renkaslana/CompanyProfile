@@ -283,6 +283,7 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
                 value={body}
                 onChange={setBody}
                 ariaLabel="Isi berita"
+                placeholder="Mulai menulis isi berita…"
                 minHeightClass="min-h-[420px]"
               />
             </FormField>
@@ -312,7 +313,7 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
             )}
             <div className="flex flex-col gap-2">
               <SubmitButton mode={mode} />
-              {mode === "edit" && initial.id && (
+              {mode === "edit" && initial.id ? (
                 <Button
                   type="button"
                   variant="outline"
@@ -323,6 +324,20 @@ export function NewsForm({ mode, initial, mediaAssets, action }: Props) {
                       rel="noopener noreferrer"
                     />
                   }
+                  className="w-full"
+                >
+                  <Eye className="size-4" />
+                  Pratinjau
+                </Button>
+              ) : (
+                // Mode create: belum ada id → belum bisa pratinjau (pratinjau
+                // membaca versi tersimpan di DB). Tampilkan tombol nonaktif +
+                // alasan, supaya aksinya tetap dapat ditemukan.
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled
+                  title="Simpan berita dulu untuk membuka pratinjau sebagai pengunjung."
                   className="w-full"
                 >
                   <Eye className="size-4" />

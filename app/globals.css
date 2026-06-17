@@ -208,3 +208,13 @@
 .prose-bmi :not(pre) > code::after {
   content: none;
 }
+
+/* Placeholder editor (Tiptap @tiptap/extension-placeholder). Tampil hanya saat
+   dokumen kosong; tidak ikut tersimpan ke HTML. */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

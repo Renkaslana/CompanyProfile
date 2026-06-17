@@ -753,6 +753,7 @@ export function SettingsForm({
                   value={privacyHtml}
                   onChange={(html) => setField("privacyPolicy", html)}
                   ariaLabel="Isi kebijakan privasi"
+                  placeholder="Tulis isi kebijakan privasi…"
                   minHeightClass="min-h-[320px]"
                 />
               </FormField>
@@ -775,6 +776,7 @@ export function SettingsForm({
                   value={termsHtml}
                   onChange={(html) => setField("termsAndConditions", html)}
                   ariaLabel="Isi syarat & ketentuan"
+                  placeholder="Tulis isi syarat & ketentuan…"
                   minHeightClass="min-h-[320px]"
                 />
               </FormField>
