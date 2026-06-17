@@ -47,7 +47,9 @@ export function SanitizedHtml({
   const clean = sanitizeRichText(html);
   return (
     <div
-      className={cn("prose prose-sm max-w-none", className)}
+      // `prose-bmi` = brand typography source of truth (app/globals.css).
+      // Default size is base `prose`; consumers add `prose-lg`/`prose-sm` etc.
+      className={cn("prose prose-bmi max-w-none", className)}
       // sanitize-html guarantees the input has been allowlisted.
       dangerouslySetInnerHTML={{ __html: clean }}
     />

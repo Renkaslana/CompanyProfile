@@ -72,8 +72,10 @@ export function RichTextEditor({
     content: value || "",
     editorProps: {
       attributes: {
+        // `prose-bmi` = brand typography source of truth (app/globals.css),
+        // identik dgn render publik via <SanitizedHtml> → WYSIWYG sungguhan.
         class: cn(
-          "prose prose-sm max-w-none px-3.5 py-3 focus:outline-none",
+          "prose prose-bmi max-w-none px-3.5 py-3 focus:outline-none",
           minHeightClass,
         ),
         ...(ariaLabel ? { "aria-label": ariaLabel } : {}),

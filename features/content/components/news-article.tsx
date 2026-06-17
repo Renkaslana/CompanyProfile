@@ -37,9 +37,13 @@ export function NewsArticle({ post }: { post: NewsPost }) {
           />
         </Reveal>
 
-        <div className="mt-8 space-y-5 text-lg leading-relaxed text-foreground/80">
-          <p className="font-medium text-ink-900">{post.excerpt}</p>
-          <SanitizedHtml html={post.body} className="news-body" />
+        <div className="mt-8">
+          {/* Excerpt sebagai lead paragraph (di luar prose). */}
+          <p className="text-lg font-medium leading-relaxed text-ink-900 sm:text-xl">
+            {post.excerpt}
+          </p>
+          {/* Body: prose-bmi (brand) + prose-lg (ukuran artikel nyaman). */}
+          <SanitizedHtml html={post.body} className="news-body prose-lg mt-6" />
         </div>
 
         <div className="mt-10">

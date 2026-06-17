@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -156,4 +157,54 @@
   .animate-typing-dot {
     animation: typing-dot 1.1s ease-in-out infinite;
   }
+}
+
+/* =============================================================
+   .prose-bmi — SINGLE SOURCE OF TRUTH untuk semua rich content
+   ============================================================= */
+/*
+   Dipakai bersama oleh: editor admin (RichTextEditor), artikel berita publik,
+   preview berita, Privacy Policy, Terms & Conditions — dan rich content Tanya
+   BMI di masa depan. SEMUA permukaan publik melewati <SanitizedHtml>, yang
+   membawa kelas ini; editor memakainya langsung di editorProps. Jadi tipografi
+   tetap identik di mana pun konten ditampilkan.
+
+   Pakai bersama utility `prose` (Tailwind Typography); kelas ini hanya meng-
+   override token warna `--tw-prose-*` agar sesuai brand BMI. Tambahkan modifier
+   ukuran (`prose-lg`/`prose-sm`) per-konsumen bila perlu. */
+.prose-bmi {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--ink-900);
+  --tw-prose-lead: var(--ink-900);
+  --tw-prose-links: var(--brand-orange-strong);
+  --tw-prose-bold: var(--ink-900);
+  --tw-prose-counters: var(--brand-orange-strong);
+  --tw-prose-bullets: var(--brand-orange);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--ink-900);
+  --tw-prose-quote-borders: var(--brand-orange);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--ink-900);
+  --tw-prose-pre-code: #f4f1ea;
+  --tw-prose-pre-bg: var(--ink-950);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+/* Heading pakai display font khas BMI (selaras @layer base). */
+.prose-bmi :is(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+  letter-spacing: -0.011em;
+}
+
+/* Inline code: beri latar lembut + hapus backtick bawaan plugin agar bersih. */
+.prose-bmi :not(pre) > code {
+  background-color: var(--muted);
+  padding: 0.15em 0.4em;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+.prose-bmi :not(pre) > code::before,
+.prose-bmi :not(pre) > code::after {
+  content: none;
 }
