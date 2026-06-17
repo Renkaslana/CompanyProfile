@@ -18,12 +18,13 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import { Logo } from "@/components/layout/logo";
-import { cn } from "@/lib/utils";
 import { ROLE_LABEL } from "@/lib/admin-i18n";
 import type { RoleName } from "@/server/auth/permissions";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { CommandPalette, type CommandItem } from "@/components/admin/command-palette";
 import { signOutAction } from "./_actions";
+
+type NavGroup = "Konten" | "Interaksi" | "Pengelolaan" | "Sistem";
 
 type NavLink = {
   href: string;
@@ -31,22 +32,34 @@ type NavLink = {
   icon: React.ElementType;
   iconKey: string;
   perm?: string;
+  /** Grup sidebar; Dashboard berdiri sendiri (tanpa grup) di paling atas. */
+  group?: NavGroup;
 };
+
+/** Urutan grup di sidebar (header). Dashboard di-render sebelum semua grup. */
+const GROUP_ORDER: NavGroup[] = ["Konten", "Interaksi", "Pengelolaan", "Sistem"];
 
 const NAV: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, iconKey: "dashboard", perm: "dashboard:read" },
-  { href: "/admin/services", label: "Layanan", icon: Package, iconKey: "services", perm: "content:read" },
-  { href: "/admin/news", label: "Berita", icon: Newspaper, iconKey: "news", perm: "content:read" },
-  { href: "/admin/gallery", label: "Galeri", icon: Images, iconKey: "gallery", perm: "content:read" },
-  { href: "/admin/team", label: "Tim", icon: Users2, iconKey: "team", perm: "content:read" },
-  { href: "/admin/clients", label: "Klien", icon: Building2, iconKey: "clients", perm: "content:read" },
-  { href: "/admin/stats", label: "Statistik", icon: BarChart3, iconKey: "stats", perm: "content:read" },
-  { href: "/admin/leads", label: "Permintaan Masuk", icon: Inbox, iconKey: "leads", perm: "lead:read" },
-  { href: "/admin/settings", label: "Pengaturan", icon: Settings2, iconKey: "settings", perm: "content:read" },
-  { href: "/admin/media", label: "Media", icon: ImageIcon, iconKey: "media", perm: "media:create" },
-  { href: "/admin/users", label: "Pengguna", icon: Users, iconKey: "users", perm: "users:manage" },
-  { href: "/admin/audit", label: "Riwayat Aktivitas", icon: ScrollText, iconKey: "audit", perm: "audit:read" },
+  // Konten
+  { href: "/admin/news", label: "Berita", icon: Newspaper, iconKey: "news", perm: "content:read", group: "Konten" },
+  { href: "/admin/gallery", label: "Galeri", icon: Images, iconKey: "gallery", perm: "content:read", group: "Konten" },
+  { href: "/admin/services", label: "Layanan", icon: Package, iconKey: "services", perm: "content:read", group: "Konten" },
+  { href: "/admin/team", label: "Tim", icon: Users2, iconKey: "team", perm: "content:read", group: "Konten" },
+  { href: "/admin/clients", label: "Klien", icon: Building2, iconKey: "clients", perm: "content:read", group: "Konten" },
+  { href: "/admin/stats", label: "Statistik", icon: BarChart3, iconKey: "stats", perm: "content:read", group: "Konten" },
+  // Interaksi
+  { href: "/admin/leads", label: "Permintaan Masuk", icon: Inbox, iconKey: "leads", perm: "lead:read", group: "Interaksi" },
+  // Pengelolaan
+  { href: "/admin/media", label: "Media", icon: ImageIcon, iconKey: "media", perm: "media:create", group: "Pengelolaan" },
+  { href: "/admin/settings", label: "Pengaturan", icon: Settings2, iconKey: "settings", perm: "content:read", group: "Pengelolaan" },
+  { href: "/admin/users", label: "Pengguna", icon: Users, iconKey: "users", perm: "users:manage", group: "Pengelolaan" },
+  // Sistem
+  { href: "/admin/audit", label: "Riwayat Aktivitas", icon: ScrollText, iconKey: "audit", perm: "audit:read", group: "Sistem" },
 ];
+
+const SIDEBAR_LINK_CLASS =
+  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white";
 
 export default async function AuthAdminLayout({
   children,
@@ -63,6 +76,11 @@ export default async function AuthAdminLayout({
     !perm || user.permissions.includes(perm as never);
 
   const visibleNav = NAV.filter((l) => allowed(l.perm));
+  const dashboardLink = visibleNav.find((l) => !l.group);
+  const groupedNav = GROUP_ORDER.map((group) => ({
+    group,
+    items: visibleNav.filter((l) => l.group === group),
+  })).filter((g) => g.items.length > 0);
   const roleLabel = ROLE_LABEL[user.role as RoleName] ?? user.role;
 
   // Command Palette (Ctrl+K) items — aksi pembuatan dulu, lalu navigasi.
@@ -90,19 +108,25 @@ export default async function AuthAdminLayout({
         <div className="border-b border-white/10 px-5 py-5">
           <Logo variant="onDark" />
         </div>
-        <nav className="flex-1 space-y-1 p-3">
-          {visibleNav.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors",
-                "hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <link.icon className="size-4" />
-              {link.label}
+        <nav className="flex-1 space-y-5 overflow-y-auto p-3">
+          {dashboardLink && (
+            <Link href={dashboardLink.href} className={SIDEBAR_LINK_CLASS}>
+              <dashboardLink.icon className="size-4" />
+              {dashboardLink.label}
             </Link>
+          )}
+          {groupedNav.map(({ group, items }) => (
+            <div key={group} className="space-y-1">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                {group}
+              </p>
+              {items.map((link) => (
+                <Link key={link.href} href={link.href} className={SIDEBAR_LINK_CLASS}>
+                  <link.icon className="size-4" />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="border-t border-white/10 p-4 text-xs text-white/50">
@@ -120,7 +144,7 @@ export default async function AuthAdminLayout({
           {/* Mobile drawer trigger + logo (replaces the missing sidebar on <md) */}
           <div className="flex items-center gap-3 md:hidden">
             <AdminMobileDrawer
-              links={visibleNav.map((l) => ({ href: l.href, label: l.label, iconKey: l.iconKey }))}
+              links={visibleNav.map((l) => ({ href: l.href, label: l.label, iconKey: l.iconKey, group: l.group }))}
               user={{ name: user.name ?? "", email: user.email ?? "", roleLabel }}
               signOutAction={signOutAction}
             />

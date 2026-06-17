@@ -56,7 +56,10 @@ export type AdminNavLink = {
   href: string;
   label: string;
   iconKey: string;
+  group?: "Konten" | "Interaksi" | "Pengelolaan" | "Sistem";
 };
+
+const GROUP_ORDER = ["Konten", "Interaksi", "Pengelolaan", "Sistem"] as const;
 
 type Props = {
   links: AdminNavLink[];
@@ -67,6 +70,25 @@ type Props = {
 
 export function AdminMobileDrawer({ links, user, signOutAction }: Props) {
   const [open, setOpen] = useState(false);
+
+  const renderLink = (link?: AdminNavLink) => {
+    if (!link) return null;
+    const Icon = ICONS[link.iconKey];
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        onClick={() => setOpen(false)}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors",
+          "hover:bg-white/5 hover:text-white",
+        )}
+      >
+        {Icon ? <Icon className="size-4" /> : null}
+        {link.label}
+      </Link>
+    );
+  };
 
   return (
     <BaseDialog.Root open={open} onOpenChange={setOpen}>
@@ -94,22 +116,18 @@ export function AdminMobileDrawer({ links, user, signOutAction }: Props) {
             </BaseDialog.Close>
           </div>
 
-          <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-            {links.map((link) => {
-              const Icon = ICONS[link.iconKey];
+          <nav className="flex-1 space-y-5 overflow-y-auto p-3">
+            {renderLink(links.find((l) => !l.group))}
+            {GROUP_ORDER.map((group) => {
+              const items = links.filter((l) => l.group === group);
+              if (items.length === 0) return null;
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors",
-                    "hover:bg-white/5 hover:text-white",
-                  )}
-                >
-                  {Icon ? <Icon className="size-4" /> : null}
-                  {link.label}
-                </Link>
+                <div key={group} className="space-y-1">
+                  <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    {group}
+                  </p>
+                  {items.map((l) => renderLink(l))}
+                </div>
               );
             })}
           </nav>
