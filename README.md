@@ -1,26 +1,33 @@
+<div align="center">
+
 # BMI Digital Platform
 
-Company profile website **and** internal content-management system (CMS) for
-**PT Bintang Mulia Investama (BMI)** — an Indonesian logistics, transportation,
-vehicle-rental, and general-trading company.
+**Company-profile website + internal CMS for PT Bintang Mulia Investama (BMI)** —
+an Indonesian logistics, transportation, vehicle-rental, and general-trading company.
 
-A single Next.js application that (1) presents the BMI brand to B2B customers
-and (2) lets non-technical staff manage every piece of public content through a
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-149ECA?logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38BDF8?logo=tailwindcss)](https://tailwindcss.com)
+[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma)](https://www.prisma.io)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql)](https://neon.tech)
+[![License](https://img.shields.io/badge/license-Proprietary-red)](LICENSE)
+
+A single Next.js application that **(1)** presents the BMI brand to B2B customers and
+**(2)** lets non-technical staff manage every piece of public content through a
 protected `/admin` area — no redeploy needed to update services, news, gallery,
 team, clients, stats, or company settings.
 
-> **Stack:** Next.js 16 (App Router) · React 19 · TypeScript (strict) ·
-> Tailwind CSS 4 · Prisma 6 · PostgreSQL (Neon) · Auth.js v5 · Cloudinary
->
-> **Status:** Phase 4 (CMS) complete — `v0.4.0`. Next: pre-deploy hardening →
-> production deploy. See [Roadmap](#roadmap).
+</div>
 
 ---
 
 ## Table of contents
 
 - [Overview](#overview)
+- [Preview / Tampilan](#preview--tampilan)
 - [Features](#features)
+- [UX & quality highlights](#ux--quality-highlights)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
 - [Getting started](#getting-started)
@@ -34,18 +41,43 @@ team, clients, stats, or company settings.
 
 ## Overview
 
-BMI Digital Platform is a content-driven company profile with a built-in CMS.
-The public marketing site is fully database-backed (no hard-coded content), and
+BMI Digital Platform is a content-driven company profile with a built-in CMS. The
+public marketing site is **fully database-backed** (no hard-coded content), and
 every surface an admin edits is reflected on the public site on the next request.
 
-Key design principles:
+Core engineering principles:
 
-- **`lib/data` is the only data path the frontend uses** — components never
-  touch the database directly (data-adaptor seam, [ADR 0008](DOCS/ADR/0008-data-adaptor-seam.md)).
-- **The service layer is authoritative for access control** — every mutation
-  and sensitive read runs `requirePermission(...)` (RBAC).
+- **`lib/data` is the only data path the frontend uses** — components never touch
+  the database directly (data-adaptor seam, [ADR 0008](DOCS/ADR/0008-data-adaptor-seam.md)).
+- **The service layer is authoritative for access control** — every mutation and
+  sensitive read runs `requirePermission(...)` (RBAC).
 - **Every state change is audited** — writes record an `AuditLog` row.
 - **Rich text is sanitized on write *and* on render** (defense in depth).
+
+> **Stack:** Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 ·
+> Prisma 6 · PostgreSQL (Neon) · Auth.js v5 · Cloudinary
+>
+> **Status:** CMS complete; admin UX redesign in progress. Next: pre-deploy
+> hardening → production deploy. See [Roadmap](#roadmap).
+
+## Preview / Tampilan
+
+> Screenshots of the running application. To (re)generate them, see
+> [`docs/screenshots/README.md`](docs/screenshots/README.md).
+
+### Public landing page
+
+![Landing page BMI](docs/screenshots/landing.png)
+
+### Admin Dashboard (Action Center)
+
+![Admin Dashboard](docs/screenshots/admin-dashboard.png)
+
+### Berita editor (WYSIWYG + Publish Box) · Pengaturan (category hub)
+
+| Berita editor | Pengaturan |
+|:---:|:---:|
+| ![Berita editor](docs/screenshots/admin-berita-editor.png) | ![Pengaturan hub](docs/screenshots/admin-settings.png) |
 
 ## Features
 
@@ -54,26 +86,48 @@ Key design principles:
   **Galeri** (operational gallery), **Karir** (careers), **Berita** (news + detail
   pages), **Kontak** (contact + lead form), **Privasi** & **Syarat & Ketentuan**
   (legal pages).
-- **Tanya BMI** — a header-triggered guided information panel (click-only Q&A,
-  no chatbot/AI/live-chat) that routes visitors to WhatsApp / phone / email /
-  the contact form by topic.
+- **Tanya BMI** — a header-triggered guided information panel (click-only Q&A, no
+  chatbot/AI/live-chat) that routes visitors to WhatsApp / phone / email / the
+  contact form by topic.
 - **Lead capture** — the contact form persists inquiries to the database with
   honeypot anti-spam.
 
 ### Admin CMS (`/admin`, role-gated)
-- **Dashboard** — content & system metrics, recent activity, "needs attention",
-  pending-publish queue, per-user recent actions.
-- **Content modules** — Layanan, Berita (draft→published→archived workflow),
-  Galeri, Tim, Klien, Statistik — each with create/edit/delete, search,
-  pagination, and audit logging.
+- **Dashboard — "Action Center"**: time-aware greeting, **Aksi Cepat** (quick-action
+  cards), **Perlu Tindakan** (prioritised pending tasks — new leads, drafts awaiting
+  publish, stale drafts), **Aktivitas Terbaru** (recent activity with per-entity
+  icons), **Konten Terbaru** (latest content with cover thumbnails), a full
+  **Riwayat Aktivitas** table, and a **website-analytics slot** (honest "not
+  connected yet" placeholder, ready for GA4).
+- **Berita (News)** — full **WYSIWYG rich-text editor** (Tiptap; no manual HTML),
+  **autosave + draft recovery** (localStorage), **preview-as-visitor**, a sticky
+  **Publish Box**, cover-image picker, and a draft → published → archived workflow.
+- **Content modules** — Layanan, Galeri, Tim, Klien, Statistik — each with
+  create/edit/delete, search, pagination, and audit logging.
 - **Permintaan Masuk (Leads)** — inbox + detail + status workflow for inquiries
   submitted from the public site.
 - **Media Library** — Cloudinary signed direct uploads, folder/tag filtering,
   reference-guarded delete.
-- **Pengaturan (Settings)** — company identity, story, vision/mission, address,
-  contact, legal entity, socials, testimonials, FAQ, and Privacy/Terms copy.
+- **Pengaturan (Settings)** — a **category hub** (cards) that opens focused
+  per-category forms: company identity, story/vision/mission/values, contact &
+  location, testimonials, FAQ, customer-service hours, legal (Privacy/Terms), and
+  social media.
 - **Pengguna (Users)** — invite, role change, enable/disable (RBAC: 4 roles).
 - **Riwayat Aktivitas (Audit Log)** — filterable, paginated, human-readable.
+
+## UX & quality highlights
+
+- **Command Palette (Ctrl/⌘ + K)** — jump to any module or quick action from anywhere.
+- **Grouped sidebar** — navigation organised into Konten · Interaksi · Pengelolaan ·
+  Sistem.
+- **Consistent brand typography** — a single `.prose-bmi` source of truth styles the
+  editor, the public article, and the legal pages identically (WYSIWYG that matches
+  the published result).
+- **Accessible editor toolbar** — `role="toolbar"` with roving-tabindex keyboard
+  navigation, ≥40px touch targets, and an inline link popover (no `window.prompt`).
+- **Paste-clean** — pasting from Word/Google Docs is stripped to the sanitiser's
+  allowlist automatically.
+- **Strict typing + zero-lint** — `tsc --noEmit`, ESLint, and `next build` all green.
 
 ## Tech stack
 
@@ -81,7 +135,7 @@ Key design principles:
 |---|---|
 | Framework | Next.js 16 (App Router, Server Components + Server Actions) |
 | Language | TypeScript (strict) |
-| UI | React 19, Tailwind CSS 4, shadcn-on-[Base UI](DOCS/FRONTEND_STRUCTURE.md) |
+| UI | React 19, Tailwind CSS 4, shadcn-on-[Base UI](DOCS/FRONTEND_STRUCTURE.md), Tiptap v3 (rich text) |
 | Database | PostgreSQL (Neon) via Prisma 6 |
 | Auth | Auth.js v5 (Credentials + JWT sessions), Argon2id hashing |
 | Media | Cloudinary (signed direct upload) |
@@ -117,8 +171,7 @@ Key design principles:
 ```
 
 See [DOCS/ARCHITECTURE.md](DOCS/ARCHITECTURE.md) for the full system overview and
-[DOCS/BACKEND_STRUCTURE.md](DOCS/BACKEND_STRUCTURE.md) for the service/repository
-layering.
+[DOCS/BACKEND_STRUCTURE.md](DOCS/BACKEND_STRUCTURE.md) for the service/repository layering.
 
 ## Getting started
 
@@ -153,8 +206,8 @@ npm run dev              # http://localhost:3000  (admin at /admin)
 
 ## Environment variables
 
-Copy `.env.example` to `.env` and fill in. Validated at boot by
-`lib/config/env.ts` (fails fast if missing/invalid).
+Copy `.env.example` to `.env` and fill in. Validated at boot by `lib/config/env.ts`
+(fails fast if missing/invalid).
 
 | Variable | Required | Purpose |
 |---|---|---|
@@ -190,17 +243,18 @@ Copy `.env.example` to `.env` and fill in. Validated at boot by
 | Phase | Scope | Status |
 |---|---|---|
 | 1–3 | Infrastructure · data layer · Auth + RBAC | ✅ Done |
-| 4 | CMS core (content, media, leads, settings, audit) | ✅ Done (`v0.4.0`) |
+| 4 | CMS core (content, media, leads, settings, audit) | ✅ Done |
+| — | **Admin UX redesign** — rich-text editor, autosave, preview, Action-Center dashboard, Command Palette, settings hub | ✅ Done |
 | — | Pre-deploy hardening (CSP, rate-limit, Sentry, legal copy) | ⏳ Next |
 | 10 | Production deploy (Vercel + Neon + custom domain) | ⏳ Planned |
+| — | Website analytics (GA4) — dashboard slot already wired | ⏸ Deferred (owner decision) |
 | 5 | Fleet management CMS | ⏳ Planned |
 | 9 | Automated testing (Vitest + Playwright + axe) | ⏳ Planned |
-| 8 | Security hardening (MFA UI, append-only audit, EXIF strip) | ⏳ Planned |
 
 ## Documentation
 
-Full technical documentation lives in [`DOCS/`](DOCS/README.md). Recommended
-reading order for a new reviewer:
+Full technical documentation lives in [`DOCS/`](DOCS/README.md). Recommended reading
+order for a new reviewer:
 
 1. **[README.md](README.md)** (this file) — overview & setup
 2. **[DOCS/ARCHITECTURE.md](DOCS/ARCHITECTURE.md)** — system design
@@ -213,6 +267,6 @@ reading order for a new reviewer:
 
 ## License
 
-**Proprietary — All Rights Reserved (portfolio / demonstration only).**
-Viewing on GitHub is permitted; cloning, forking, or reuse requires explicit
-written permission from the owner. See [LICENSE](LICENSE).
+**Proprietary — All Rights Reserved (portfolio / demonstration only).** Viewing on
+GitHub is permitted; cloning, forking, or reuse requires explicit written permission
+from the owner. See [LICENSE](LICENSE).
