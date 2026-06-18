@@ -9,6 +9,4 @@ and the live docs index [`DOCS/README.md`](../README.md).
 
 | File | What it was | Why archived |
 |---|---|---|
-| `PRD_BMI_Platform.md` | Original product requirements / spec | Planning artifact; superseded by shipped implementation + ADRs |
-| `IMPLEMENTATION_HANDOFF.md` | Phase 0 → 1 build handoff (approved plan + roadmap) | Phase 1 long complete; superseded by CHANGELOG + ARCHITECTURE |
-| `PROJECT_MASTER_HANDOFF.md` | Running internal continuation log across phases | Very detailed internal history; kept for reference, not reviewer-facing |
+| `PRD_BMI_Platform.md` | Original product requirements / spec | Planning artifact; superseded by shipped implementation + ADRs, but useful as the original requirements reference |

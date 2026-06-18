@@ -63,21 +63,19 @@ Core engineering principles:
 ## Preview / Tampilan
 
 > Screenshots of the running application. To (re)generate them, see
-> [`docs/screenshots/README.md`](docs/screenshots/README.md).
+> [`DOCS/screenshots/README.md`](DOCS/screenshots/README.md).
 
 ### Public landing page
 
-![Landing page BMI](docs/screenshots/landing.png)
+![Landing page BMI](DOCS/screenshots/landing.png)
+
+### Halaman Berita (public news listing)
+
+![Halaman Berita BMI](DOCS/screenshots/berita-list.png)
 
 ### Admin Dashboard (Action Center)
 
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
-
-### Berita editor (WYSIWYG + Publish Box) · Pengaturan (category hub)
-
-| Berita editor | Pengaturan |
-|:---:|:---:|
-| ![Berita editor](docs/screenshots/admin-berita-editor.png) | ![Pengaturan hub](docs/screenshots/admin-settings.png) |
+![Admin Dashboard](DOCS/screenshots/admin-dashboard.png)
 
 ## Features
 
