@@ -17,7 +17,23 @@
  */
 import { useActionState, useState, useId, useMemo } from "react";
 import { useFormStatus } from "react-dom";
-import { AlertTriangle, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Building2,
+  ChevronRight,
+  FileText,
+  Headset,
+  HelpCircle,
+  Loader2,
+  MapPin,
+  MessagesSquare,
+  Plus,
+  ScrollText,
+  Share2,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import {
   FormActions,
   FormBanner,
@@ -54,42 +70,83 @@ type Props = {
 };
 
 /**
- * Tab grouping (UX 5). Each tab shows only its own sections; the others stay
- * mounted (display:none) so React state + scroll position survive switches.
- * Single save button submits the whole form regardless of active tab.
+ * Kategori pengaturan sebagai KARTU hub (UX 9). Admin memilih satu kartu untuk
+ * membuka pengaturan kategori tersebut; tombol simpan menyimpan SELURUH form
+ * (state semua kategori tetap hidup di React state, jadi aman berpindah).
  */
-const TABS = [
+const TABS: ReadonlyArray<{
+  id: string;
+  label: string;
+  desc: string;
+  icon: LucideIcon;
+  tile: string;
+  sections: string[];
+}> = [
   {
     id: "identitas",
-    label: "Identitas & Cerita",
-    sections: ["identitas", "cerita", "visi-misi", "nilai"],
+    label: "Identitas Perusahaan",
+    desc: "Nama, tagline, logo, tahun berdiri, dan informasi dasar perusahaan.",
+    icon: Building2,
+    tile: "bg-brand-orange/12 text-brand-orange-strong",
+    sections: ["identitas"],
+  },
+  {
+    id: "tentang",
+    label: "Tentang Perusahaan",
+    desc: "Cerita perusahaan, visi, misi, dan nilai-nilai inti perusahaan.",
+    icon: FileText,
+    tile: "bg-amber-500/12 text-amber-600",
+    sections: ["cerita", "visi-misi", "nilai"],
   },
   {
     id: "kontak",
     label: "Kontak & Lokasi",
+    desc: "Alamat kantor, telepon, email, jam operasional, dan peta lokasi.",
+    icon: MapPin,
+    tile: "bg-violet-500/12 text-violet-600",
     sections: ["alamat", "kontak"],
   },
   {
     id: "testimoni",
-    label: "Testimoni",
+    label: "Testimoni Klien",
+    desc: "Kelola testimoni dari klien dan mitra perusahaan.",
+    icon: MessagesSquare,
+    tile: "bg-sky-500/12 text-sky-600",
     sections: ["testimoni"],
+  },
+  {
+    id: "faq",
+    label: "FAQ (Pertanyaan)",
+    desc: "Kelola pertanyaan umum yang sering diajukan oleh pelanggan.",
+    icon: HelpCircle,
+    tile: "bg-blue-500/12 text-blue-600",
+    sections: ["faq"],
   },
   {
     id: "layanan-pelanggan",
     label: "Layanan Pelanggan",
-    sections: ["support-hours", "faq"],
+    desc: "Jam operasional dan informasi layanan pelanggan.",
+    icon: Headset,
+    tile: "bg-emerald-500/12 text-emerald-600",
+    sections: ["support-hours"],
   },
   {
     id: "legal",
-    label: "Legal & Halaman Kebijakan",
+    label: "Legal & Kebijakan",
+    desc: "Informasi legal, kebijakan privasi, syarat & ketentuan, dokumen hukum.",
+    icon: ScrollText,
+    tile: "bg-rose-500/12 text-rose-600",
     sections: ["legal", "privasi", "syarat"],
   },
   {
     id: "sosial",
     label: "Sosial Media",
+    desc: "Kelola akun media sosial perusahaan yang ditampilkan di website.",
+    icon: Share2,
+    tile: "bg-fuchsia-500/12 text-fuchsia-600",
     sections: ["sosial"],
   },
-] as const;
+];
 
 type TabId = (typeof TABS)[number]["id"];
 
@@ -120,10 +177,10 @@ export function SettingsForm({
   const [state, formAction] = useActionState<SettingsFormState | null, FormData>(action, null);
   const [company, setCompany] = useState<CompanyJson>(initialCompany);
   const [values, setValues] = useState<ValueItem[]>(initialValues);
-  const [activeTab, setActiveTab] = useState<TabId>("identitas");
-  const visibleSections = new Set(
-    TABS.find((t) => t.id === activeTab)?.sections ?? [],
-  );
+  // null = tampilan hub (grid kartu kategori); set = sedang membuka 1 kategori.
+  const [activeTab, setActiveTab] = useState<TabId | null>(null);
+  const activeTabDef = TABS.find((t) => t.id === activeTab);
+  const visibleSections = new Set(activeTabDef?.sections ?? []);
 
   const fe = state?.fieldErrors;
   const companyJson = useMemo(() => JSON.stringify(company), [company]);
@@ -257,6 +314,19 @@ export function SettingsForm({
   const privacyHtml = company.privacyPolicy ?? "";
   const termsHtml = company.termsAndConditions ?? "";
 
+  // Hitungan ringkas untuk badge kartu hub (mirip mockup: "N testimoni", dll).
+  const categoryCount = (id: TabId): string | null => {
+    if (id === "testimoni") {
+      const n = company.testimonials?.length ?? 0;
+      return n ? `${n} testimoni aktif` : null;
+    }
+    if (id === "faq") {
+      const n = company.faq?.length ?? 0;
+      return n ? `${n} pertanyaan` : null;
+    }
+    return null;
+  };
+
   return (
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="companyJson" value={companyJson} />
@@ -283,33 +353,55 @@ export function SettingsForm({
         />
       )}
 
-      {/* Tab bar (UX 5) — choose which category of settings to edit. Single save
-          applies to all tabs at once. */}
-      <div
-        role="tablist"
-        aria-label="Kategori pengaturan"
-        className="-mx-1 flex flex-wrap gap-1 overflow-x-auto rounded-2xl border border-border bg-card p-1 shadow-sm"
-      >
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={cn(
-              "shrink-0 rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:text-sm",
-              activeTab === t.id
-                ? "bg-brand-orange text-white shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-ink-900",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Hub kartu kategori (UX 9) — pilih kartu untuk membuka pengaturannya. */}
+      {activeTab === null && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {TABS.map((t) => {
+            const count = categoryCount(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-colors hover:border-brand-orange/40"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className={cn("inline-flex size-11 items-center justify-center rounded-xl", t.tile)}>
+                    <t.icon className="size-5" />
+                  </span>
+                  <ChevronRight className="size-5 text-muted-foreground/40 transition-colors group-hover:text-brand-orange-strong" />
+                </div>
+                <p className="mt-3 text-sm font-semibold text-ink-900">{t.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.desc}</p>
+                {count && (
+                  <span className="mt-3 inline-flex w-fit items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
+      {/* Form kategori aktif — section lain tetap hidden via visibleSections. */}
+      {activeTab !== null && (
       <div>
+        <div className="mb-5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab(null)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:text-ink-900"
+          >
+            <ArrowLeft className="size-4" />
+            Semua pengaturan
+          </button>
+          {activeTabDef && (
+            <h2 className="font-display text-lg font-bold text-ink-900">
+              {activeTabDef.label}
+            </h2>
+          )}
+        </div>
         <div className="space-y-6">
           {/* ── Identitas ────────────────────────────────────────────── */}
           <div id="identitas" className={cn("scroll-mt-24", !visibleSections.has("identitas") && "hidden")}>
@@ -811,6 +903,7 @@ export function SettingsForm({
           </FormActions>
         </div>
       </div>
+      )}
     </form>
   );
 }

@@ -48,11 +48,10 @@ export default async function SettingsAdminPage({
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <header>
-        <h1 className="font-display text-2xl font-bold text-ink-900">Pengaturan situs</h1>
+        <h1 className="font-display text-2xl font-bold text-ink-900">Pengaturan Situs</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Atur identitas perusahaan, cerita, visi & misi, nilai inti, alamat,
-          kontak, legal, dan sosial media. Perubahan langsung dipakai di halaman
-          publik (beranda, /tentang, /kontak, footer).
+          Kelola semua pengaturan website BMI dengan mudah dan terstruktur. Pilih
+          kategori di bawah; perubahan langsung dipakai di halaman publik.
         </p>
       </header>
 
