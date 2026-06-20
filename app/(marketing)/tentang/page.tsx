@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { CheckCircle2, Clock, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionHeading } from "@/components/sections/section-heading";
 import { ImageFrame } from "@/components/image-frame";
+import { CompanyTimeline } from "@/components/sections/company-timeline";
 import { CoverageMap } from "@/components/sections/coverage-map";
 import { CtaBand } from "@/components/sections/cta-band";
 import { TeamGrid } from "@/features/content/components/team-grid";
 import { Reveal } from "@/components/motion/reveal";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { StatsBar } from "@/components/sections/stats-bar";
-import { COMPANY } from "@/lib/constants";
+import { COMPANY, COMPANY_JOURNEY } from "@/lib/constants";
 import { getCoverage, getStats, getTeam, getSiteSettings } from "@/lib/data";
 
 // Phase 4 M8: render fresh on every request so team/stat changes from the
@@ -31,6 +32,14 @@ export default async function TentangPage() {
   ]);
   const yearsActive = new Date().getFullYear() - settings.foundedYear;
 
+  // Stats halaman: "Tahun Pengalaman" (dihitung dari foundedYear, selalu
+  // akurat) sebagai pemimpin, lalu armada/pengiriman/klien dari CMS — buang
+  // metrik "Operasional 24/7" agar kombinasi 4 stat fokus ke trust & rekam jejak.
+  const displayStats = [
+    { id: "stat-years", value: yearsActive, suffix: "+", label: "Tahun Pengalaman" },
+    ...stats.filter((s) => s.suffix !== "/7" && !/operasional/i.test(s.label)),
+  ].slice(0, 4);
+
   return (
     <>
       <PageHeader
@@ -43,11 +52,48 @@ export default async function TentangPage() {
       {/* Story */}
       <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Years-active callout */}
+          {/* Anchor pengalaman — sejak 2006, 20+ tahun, transformasi bisnis */}
           <Reveal>
-            <div className="mb-12 inline-flex items-center gap-3 rounded-full border border-brand-orange/25 bg-brand-orange/5 px-4 py-2 text-sm font-medium text-brand-orange-strong">
-              <Clock className="size-4" />
-              {yearsActive}+ tahun pengalaman · sejak {settings.foundedYear}
+            <div className="mb-12 overflow-hidden rounded-3xl border border-brand-orange/20 bg-gradient-to-br from-brand-orange/8 via-brand-orange/[0.04] to-transparent p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-orange-strong">
+                Melayani sejak {settings.foundedYear}
+              </p>
+              <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="font-display text-4xl font-bold leading-none text-ink-900 sm:text-5xl">
+                    {yearsActive}+
+                    <span className="ml-2 align-baseline text-2xl font-bold sm:text-3xl">
+                      Tahun Pengalaman
+                    </span>
+                  </p>
+                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                    Bertumbuh bertahap dari rental kendaraan menjadi perusahaan
+                    logistik terintegrasi — kepercayaan yang dibangun lewat
+                    pengalaman operasional nyata di lapangan, bukan sekadar klaim.
+                  </p>
+                </div>
+                {/* Alur transformasi bisnis */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs font-semibold sm:text-sm">
+                  {["Rental Kendaraan", "Transportasi", "Distribusi", "Logistik"].map(
+                    (s, i, arr) => (
+                      <span key={s} className="inline-flex items-center gap-2">
+                        <span
+                          className={
+                            i === arr.length - 1
+                              ? "text-brand-orange-strong"
+                              : "text-foreground/70"
+                          }
+                        >
+                          {s}
+                        </span>
+                        {i < arr.length - 1 && (
+                          <ArrowRight className="size-3.5 text-brand-orange/50" />
+                        )}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </div>
             </div>
           </Reveal>
 
@@ -72,8 +118,17 @@ export default async function TentangPage() {
             </div>
           </div>
 
+          {/* Timeline perjalanan — transformasi rental → logistik */}
+          <Reveal className="mt-20">
+            <SectionHeading
+              eyebrow="Perjalanan Kami"
+              title="Dari rental kendaraan menjadi logistik terintegrasi"
+            />
+            <CompanyTimeline milestones={COMPANY_JOURNEY} className="mt-10" />
+          </Reveal>
+
           <Reveal className="mt-16">
-            <StatsBar stats={stats} tone="onLight" />
+            <StatsBar stats={displayStats} tone="onLight" />
           </Reveal>
         </div>
       </section>

@@ -3,7 +3,7 @@ export const COMPANY = {
   shortName: "BMI",
   tagline:
     "Mitra logistik, transportasi, rental, dan perdagangan umum yang andal — bergerak tepat waktu, aman, dan terpantau di seluruh Indonesia.",
-  foundedYear: 2014,
+  foundedYear: 2006,
   address: "Jl. Raya Industri Blok C No. 12, Kawasan Pergudangan",
   city: "Jakarta Utara",
   province: "DKI Jakarta",
@@ -58,6 +58,39 @@ export const VALUES = [
     title: "Berkualitas",
     description:
       "Investasi pada armada modern, pemantauan real-time, dan layanan yang konsisten dari ujung ke ujung.",
+  },
+] as const;
+
+/**
+ * Perjalanan perusahaan (timeline /tentang). Aset branding utama BMI:
+ * transformasi bertahap rental kendaraan → transportasi → distribusi →
+ * logistik terintegrasi. Disimpan sebagai konstanta (bukan CMS/DB) karena
+ * jarang berubah; layout timeline tetap fleksibel bila kelak dipindah ke CMS.
+ */
+export const COMPANY_JOURNEY = [
+  {
+    year: "2006",
+    title: "Berdiri sebagai rental kendaraan",
+    description:
+      "BMI memulai langkah sebagai usaha rental kendaraan dan layanan transportasi, melayani kebutuhan mobilitas dan pengangkutan skala awal.",
+  },
+  {
+    year: "Bertumbuh",
+    title: "Memperkuat layanan transportasi",
+    description:
+      "Kepercayaan pelanggan mendorong penambahan armada dan perluasan rute, menjadikan transportasi sebagai tulang punggung operasional kami.",
+  },
+  {
+    year: "Ekspansi",
+    title: "Masuk ke distribusi B2B",
+    description:
+      "BMI memperluas peran ke distribusi terjadwal bagi pelanggan bisnis, menghubungkan produsen ke titik-titik tujuan di berbagai wilayah.",
+  },
+  {
+    year: "Kini",
+    title: "Solusi logistik terintegrasi",
+    description:
+      "Hari ini BMI menyatukan transportasi, distribusi, dan pergudangan sebagai mitra logistik B2B yang melayani seluruh Indonesia.",
   },
 ] as const;
 

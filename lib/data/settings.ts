@@ -27,10 +27,10 @@ export type SiteSettingsResolved = CompanyJson & {
 };
 
 const DEFAULT_STORY = {
-  headline: "Dari armada pertama hingga jaringan nasional",
+  headline: "Dari rental kendaraan menjadi mitra logistik nasional",
   paragraphs: [
-    `Berdiri sejak ${COMPANY.foundedYear}, ${COMPANY.legalName} tumbuh dari layanan transportasi sederhana menjadi mitra logistik terintegrasi. Fokus kami tak pernah berubah: menggerakkan barang dengan tepat waktu, aman, dan terpantau.`,
-    "Kami melayani perusahaan lintas industri ritel, manufaktur, FMCG, hingga konstruksi dengan kombinasi armada yang andal, tim profesional, dan proses yang disiplin. Setiap pengiriman adalah komitmen yang kami jaga.",
+    `${COMPANY.legalName} memulai perjalanannya pada ${COMPANY.foundedYear} sebagai usaha rental kendaraan dan layanan transportasi. Dari sana kami tumbuh bertahap — menambah armada, memperluas rute, dan mendalami kebutuhan distribusi pelanggan.`,
+    "Pengalaman bertahun-tahun di lapangan itulah yang membentuk BMI hari ini: mitra transportasi, distribusi, dan logistik terintegrasi yang melayani perusahaan ritel, manufaktur, FMCG, hingga konstruksi di seluruh Indonesia. Kami bukan pemain baru — kami bertumbuh bersama setiap muatan yang dipercayakan untuk bergerak tepat waktu, aman, dan terpantau.",
   ],
 };
 
