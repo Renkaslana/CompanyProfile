@@ -208,7 +208,7 @@ export default async function TentangPage() {
             {[
               {
                 title: "Badan Usaha Resmi",
-                body: `${settings.legal.entity} terdaftar NIB ${settings.legal.nib}.`,
+                body: "Perseroan Terbatas (PT) sah dan terdaftar resmi di Kementerian Hukum dan HAM RI dengan perizinan usaha aktif.",
               },
               {
                 title: "Operasional 24/7",
