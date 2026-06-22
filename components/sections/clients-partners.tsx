@@ -136,7 +136,26 @@ function ClientCell({
   );
 }
 
-/** Logo gambar (grayscale→warna) atau fallback wordmark, tinggi seragam. */
+/**
+ * Logo: gambar asli (grayscale→warna) bila tersedia; jika tidak, fallback
+ * "logo placeholder" = badge monogram berwarna + wordmark (warna brand
+ * deterministik dari nama). Placeholder yang jujur untuk demo — diganti logo
+ * klien asli lewat CMS nanti tanpa mengubah layout.
+ */
+const LOGO_PALETTE = [
+  "#0d9488", "#4f46e5", "#16a34a", "#d97706",
+  "#ea580c", "#0284c7", "#7c3aed", "#65a30d",
+];
+function brandColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return LOGO_PALETTE[h % LOGO_PALETTE.length];
+}
+function initials(name: string): string {
+  const w = name.trim().split(/\s+/);
+  return ((w[0]?.[0] ?? "") + (w[1]?.[0] ?? "")).toUpperCase();
+}
+
 function Logo({
   client,
   ariaHidden,
@@ -155,14 +174,26 @@ function Logo({
           fill
           sizes="128px"
           className="object-contain opacity-60 grayscale transition duration-300 group-hover/logo:opacity-100 group-hover/logo:grayscale-0"
-          unoptimized={!isCloudinary(logoSrc) && !isLocal(logoSrc)}
+          unoptimized={
+            logoSrc.endsWith(".svg") ||
+            (!isCloudinary(logoSrc) && !isLocal(logoSrc))
+          }
         />
       </div>
     );
   }
+  // Fallback: badge monogram + wordmark (muted saat diam → berwarna saat hover).
   return (
-    <span className="flex h-10 w-32 items-center justify-center whitespace-nowrap font-display text-base font-bold tracking-tight text-ink-900/55 transition-colors duration-300 group-hover/logo:text-brand-orange-strong">
-      {client.name}
-    </span>
+    <div className="flex h-10 items-center gap-2.5 opacity-70 grayscale transition duration-300 group-hover/logo:opacity-100 group-hover/logo:grayscale-0">
+      <span
+        className="flex size-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
+        style={{ backgroundColor: brandColor(client.name) }}
+      >
+        {initials(client.name)}
+      </span>
+      <span className="whitespace-nowrap font-display text-base font-bold tracking-tight text-ink-900">
+        {client.name}
+      </span>
+    </div>
   );
 }
