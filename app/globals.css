@@ -157,6 +157,29 @@
   .animate-typing-dot {
     animation: typing-dot 1.1s ease-in-out infinite;
   }
+
+  /* Infinite logo marquee (Trust Section). List digandakan di markup → geser
+     -50% = tepat satu set → loop mulus. Pause via group-hover di markup. */
+  @keyframes bmi-marquee-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes bmi-marquee-right {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+  .marquee-left {
+    animation: bmi-marquee-left 42s linear infinite;
+  }
+  .marquee-right {
+    animation: bmi-marquee-right 52s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-left,
+    .marquee-right {
+      animation: none;
+    }
+  }
 }
 
 /* =============================================================

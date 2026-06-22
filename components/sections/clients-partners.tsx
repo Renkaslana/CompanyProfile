@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Reveal } from "@/components/motion/reveal";
-import { Stagger, StaggerItem } from "@/components/motion/stagger";
+import { cn } from "@/lib/utils";
 import type { ClientLogo } from "@/features/content/types";
 
 function isCloudinary(src: string) {
@@ -10,67 +10,159 @@ function isLocal(src: string) {
   return src.startsWith("/");
 }
 
+/**
+ * Trust Section — Infinite Logo Marquee (social proof, B2B enterprise).
+ *
+ * Desktop: 2 baris berlawanan arah. Mobile: 1 baris. Hover: marquee pause +
+ * logo grayscale→warna + scale halus. Logo hilang → fallback wordmark.
+ * `prefers-reduced-motion` → marquee disembunyikan, fallback ke grid statis.
+ *
+ * Murni presentasional — render ulang data `clients` yang sudah ada (CMS),
+ * tanpa perubahan skema/struktur data dan tanpa statistik baru.
+ */
 export function ClientsPartners({ clients }: { clients: ClientLogo[] }) {
+  if (clients.length === 0) return null;
+
+  const half = Math.ceil(clients.length / 2);
+  const rowA = clients.slice(0, half);
+  const rowB = clients.slice(half).length > 0 ? clients.slice(half) : clients;
+
   return (
-    <section className="border-y border-border bg-surface py-16">
+    <section className="overflow-hidden border-y border-border bg-surface py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
           <p className="text-center text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Dipercaya oleh perusahaan lintas industri
           </p>
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground/80">
+            Mitra dari ritel, manufaktur, FMCG, hingga konstruksi di seluruh Indonesia.
+          </p>
         </Reveal>
-        <Stagger
-          className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-4"
-          gap={0.05}
-        >
-          {clients.map((c) => {
-            const logoSrc = c.logo?.src;
-            const logoAlt = c.logo?.alt ?? c.name;
-            const card = (
-              <div className="group flex h-full flex-col items-center justify-center gap-2 bg-card px-4 py-7 text-center transition-colors hover:bg-accent/60">
-                {logoSrc ? (
-                  <div className="relative h-10 w-32">
-                    <Image
-                      src={logoSrc}
-                      alt={logoAlt}
-                      fill
-                      sizes="128px"
-                      className="object-contain opacity-70 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
-                      unoptimized={!isCloudinary(logoSrc) && !isLocal(logoSrc)}
-                    />
-                  </div>
-                ) : (
-                  <span className="font-display text-lg font-bold tracking-tight text-ink-900/70 transition-colors group-hover:text-brand-orange-strong">
-                    {c.name}
-                  </span>
-                )}
-                {c.sector && (
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {c.sector}
-                  </span>
-                )}
-              </div>
-            );
-            return (
-              <StaggerItem key={c.id}>
-                {c.url ? (
-                  <a
-                    href={c.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Buka situs ${c.name}`}
-                    className="block h-full"
-                  >
-                    {card}
-                  </a>
-                ) : (
-                  card
-                )}
-              </StaggerItem>
-            );
-          })}
-        </Stagger>
+
+        {/* Marquee (motion) — disembunyikan saat prefers-reduced-motion */}
+        <div className="mt-10 motion-reduce:hidden">
+          {/* Mobile: 1 baris (semua logo) */}
+          <div className="md:hidden">
+            <MarqueeRow items={clients} direction="left" />
+          </div>
+          {/* Desktop: 2 baris berlawanan arah */}
+          <div className="hidden space-y-6 md:block">
+            <MarqueeRow items={rowA} direction="left" />
+            <MarqueeRow items={rowB} direction="right" />
+          </div>
+        </div>
+
+        {/* Fallback grid statis — hanya saat prefers-reduced-motion */}
+        <div className="mt-10 hidden grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border motion-reduce:grid sm:grid-cols-4">
+          {clients.map((c) => (
+            <div
+              key={c.id}
+              className="group/logo flex items-center justify-center bg-card px-4 py-7"
+            >
+              <Logo client={c} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+/* ── Marquee row ───────────────────────────────────────────────────── */
+
+function MarqueeRow({
+  items,
+  direction,
+}: {
+  items: ClientLogo[];
+  direction: "left" | "right";
+}) {
+  // List digandakan agar loop translateX(-50%) mulus tanpa jeda.
+  const doubled = [...items, ...items];
+  return (
+    <div className="group flex overflow-hidden py-1">
+      <div
+        className={cn(
+          "flex w-max items-center group-hover:[animation-play-state:paused]",
+          direction === "right" ? "marquee-right" : "marquee-left",
+        )}
+      >
+        {doubled.map((c, i) => {
+          const duplicate = i >= items.length;
+          return (
+            <ClientCell key={`${c.id}-${i}`} client={c} duplicate={duplicate} />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ClientCell({
+  client,
+  duplicate,
+}: {
+  client: ClientLogo;
+  duplicate: boolean;
+}) {
+  const interactive = Boolean(client.url) && !duplicate;
+  const box = (
+    <div
+      className="group/logo flex items-center justify-center transition-transform duration-300 ease-bmi hover:scale-105"
+      title={client.name}
+    >
+      <Logo client={client} ariaHidden={duplicate} />
+    </div>
+  );
+  return (
+    <div
+      className="shrink-0 px-6 sm:px-8"
+      aria-hidden={duplicate || undefined}
+    >
+      {interactive ? (
+        <a
+          href={client.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Buka situs ${client.name}`}
+          className="block"
+        >
+          {box}
+        </a>
+      ) : (
+        box
+      )}
+    </div>
+  );
+}
+
+/** Logo gambar (grayscale→warna) atau fallback wordmark, tinggi seragam. */
+function Logo({
+  client,
+  ariaHidden,
+}: {
+  client: ClientLogo;
+  ariaHidden?: boolean;
+}) {
+  const logoSrc = client.logo?.src;
+  const logoAlt = client.logo?.alt ?? client.name;
+  if (logoSrc) {
+    return (
+      <div className="relative h-10 w-32">
+        <Image
+          src={logoSrc}
+          alt={ariaHidden ? "" : logoAlt}
+          fill
+          sizes="128px"
+          className="object-contain opacity-60 grayscale transition duration-300 group-hover/logo:opacity-100 group-hover/logo:grayscale-0"
+          unoptimized={!isCloudinary(logoSrc) && !isLocal(logoSrc)}
+        />
+      </div>
+    );
+  }
+  return (
+    <span className="flex h-10 w-32 items-center justify-center whitespace-nowrap font-display text-base font-bold tracking-tight text-ink-900/55 transition-colors duration-300 group-hover/logo:text-brand-orange-strong">
+      {client.name}
+    </span>
   );
 }
