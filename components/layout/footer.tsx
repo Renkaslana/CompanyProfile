@@ -130,7 +130,7 @@ export async function Footer() {
             </Link>
             <span className="hidden sm:inline">·</span>
             <p>
-              {settings.legal.entity} · NIB {settings.legal.nib}
+              {settings.legal.entity} · Terdaftar resmi di Kemenkumham RI
             </p>
           </div>
         </div>
