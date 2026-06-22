@@ -7,7 +7,8 @@
  *
  * Anti-spam: honeypot field `website` is rendered but hidden via CSS —
  * real users can't see it; spam bots auto-fill it; server rejects any
- * non-empty value. Phase 8 will add Turnstile + per-IP rate limit.
+ * non-empty value. Ditambah rate-limit per-IP (Upstash) + Cloudflare Turnstile
+ * (opsional, aktif bila NEXT_PUBLIC_TURNSTILE_SITE_KEY di-set).
  */
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -19,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { submitLeadAction } from "@/features/leads/actions";
+import { TurnstileField } from "@/features/leads/components/turnstile-field";
 import type { LeadFormState } from "@/lib/validation/lead";
 
 const SERVICE_OPTIONS: { value: string; label: string }[] = [
@@ -273,6 +275,7 @@ export function LeadForm({ className, source = "kontak" }: Props) {
         {fieldError("message")}
       </div>
 
+      <TurnstileField />
       <SubmitButton />
     </form>
   );
@@ -342,6 +345,7 @@ function FreshForm({
         </Label>
         <Textarea id="message2" name="message" placeholder="Ceritakan kebutuhan logistik atau transportasi Anda…" rows={4} maxLength={2000} className={cn(inputCls, "h-auto min-h-24 resize-none")} required />
       </div>
+      <TurnstileField />
       <SubmitButton />
     </form>
   );

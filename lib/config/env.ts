@@ -81,6 +81,11 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().trim().optional().or(z.literal("")),
   CLOUDINARY_API_KEY: z.string().trim().optional().or(z.literal("")),
   CLOUDINARY_API_SECRET: z.string().trim().optional().or(z.literal("")),
+  /** Cloudflare Turnstile (captcha) untuk form publik — opsional. Tanpa key,
+   *  captcha dilewati (form tetap jalan). Site key boleh NEXT_PUBLIC karena
+   *  bukan rahasia (dipakai widget di browser); secret key server-only. */
+  TURNSTILE_SECRET_KEY: z.string().trim().optional().or(z.literal("")),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().trim().optional().or(z.literal("")),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -6,11 +6,15 @@
  * persists via LeadService, and returns a form-state response shaped so the
  * client form can render either success or per-field errors.
  *
- * No authentication required — visitors are anonymous. The honeypot field
- * `website` blocks naive bots; Phase 8 will add Turnstile + rate limiting.
+ * No authentication required — visitors are anonymous. Anti-abuse berlapis:
+ * honeypot field `website` (bot naif) · rate-limit per-IP via Upstash
+ * (fail-open) · Cloudflare Turnstile captcha (opsional, aktif bila key di-set).
  */
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { LeadService } from "@/server/services/lead.service";
+import { checkPublicFormRateLimit } from "@/server/services/public-rate-limit";
+import { verifyTurnstile } from "@/server/services/turnstile";
 import {
   leadSubmitSchema,
   type LeadFormState,
@@ -47,6 +51,38 @@ export async function submitLeadAction(
     phone: raw.phone,
     message: raw.message,
   };
+
+  // Rate-limit per IP (fail-open bila Upstash tak dikonfigurasi).
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip") ||
+    "unknown";
+  const rl = await checkPublicFormRateLimit(ip);
+  if (!rl.allowed) {
+    return {
+      ok: false,
+      fieldErrors: {},
+      message:
+        "Terlalu banyak pengajuan dalam waktu singkat. Mohon coba lagi beberapa menit lagi, atau hubungi kami via WhatsApp.",
+      values: echoValues,
+    };
+  }
+
+  // Captcha Turnstile (dilewati bila tak dikonfigurasi — lihat verifyTurnstile).
+  const captchaOk = await verifyTurnstile(
+    readString(formData, "cf-turnstile-response"),
+    ip,
+  );
+  if (!captchaOk) {
+    return {
+      ok: false,
+      fieldErrors: {},
+      message:
+        "Verifikasi keamanan gagal. Mohon muat ulang halaman lalu coba lagi, atau hubungi kami via WhatsApp.",
+      values: echoValues,
+    };
+  }
 
   const parsed = leadSubmitSchema.safeParse(raw);
   if (!parsed.success) {
