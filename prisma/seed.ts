@@ -1,7 +1,7 @@
 /**
  * BMI Digital Platform — Database seed
  *
- * Populates the database from `mock/*.mock.ts` + `lib/constants.ts`. Designed
+ * Populates the database from `prisma/seed-data/*.mock.ts` + `lib/constants.ts`. Designed
  * to be **idempotent**: safe to re-run any number of times. Every row is
  * upserted by a deterministic key (slug, name, email, key, mock id, or a
  * synthetic id derived from a media path), so counts stay constant.
@@ -24,17 +24,17 @@
  */
 import { PrismaClient, type Prisma } from "@prisma/client";
 
-import { servicesMock } from "../mock/services.mock";
-import { fleetMock } from "../mock/fleet.mock";
-import { galleryMock } from "../mock/gallery.mock";
-import { newsMock } from "../mock/news.mock";
-import { teamMock } from "../mock/team.mock";
-import { clientsMock } from "../mock/clients.mock";
-import { jobsMock } from "../mock/jobs.mock";
-import { coverageMock } from "../mock/coverage.mock";
-import { achievementsMock } from "../mock/achievements.mock";
-import { certificationsMock } from "../mock/certifications.mock";
-import { statsMock } from "../mock/stats.mock";
+import { servicesMock } from "./seed-data/services.mock";
+import { fleetMock } from "./seed-data/fleet.mock";
+import { galleryMock } from "./seed-data/gallery.mock";
+import { newsMock } from "./seed-data/news.mock";
+import { teamMock } from "./seed-data/team.mock";
+import { clientsMock } from "./seed-data/clients.mock";
+import { jobsMock } from "./seed-data/jobs.mock";
+import { coverageMock } from "./seed-data/coverage.mock";
+import { achievementsMock } from "./seed-data/achievements.mock";
+import { certificationsMock } from "./seed-data/certifications.mock";
+import { statsMock } from "./seed-data/stats.mock";
 import { COMPANY, VALUES } from "../lib/constants";
 import { ROLE_PERMISSIONS, type RoleName } from "../server/auth/permissions";
 
