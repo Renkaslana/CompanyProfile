@@ -103,8 +103,8 @@ export default async function AuthAdminLayout({
 
   return (
     <div className="flex min-h-screen">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-white/10 bg-ink-950 text-white md:flex">
+      {/* Desktop sidebar — sticky agar tidak ikut scroll konten */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-ink-950 text-white md:flex">
         <div className="border-b border-white/10 px-5 py-5">
           <Logo variant="onDark" />
         </div>
@@ -140,7 +140,7 @@ export default async function AuthAdminLayout({
 
       {/* Main */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
           {/* Mobile drawer trigger + logo (replaces the missing sidebar on <md) */}
           <div className="flex items-center gap-3 md:hidden">
             <AdminMobileDrawer
